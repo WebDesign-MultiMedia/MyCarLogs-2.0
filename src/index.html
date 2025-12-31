@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind 3 -->
+  <link href="./output.css" rel="stylesheet">
+  <!-- Awsome Font -->
+   <script src="https://kit.fontawesome.com/225318ecee.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-800">
+ 
+<nav class="flex flex-row justify-between items-center relative top-4 p-2">
+  <img src="/imgs/spare-parts.png" alt="" class="w-20">
+  <section>
+    <ul class="flex flex-row gap-10 text-4xl bg-black p-5 rounded-full text-logoClr">
+      <li><i class="fa-sharp-duotone fa-light fa-clipboard-list"></i></li>
+      <li><i class="fa-sharp-duotone fa-light fa-gears text-logoClrBlue"></i></li>
+      <li><a href="http://"><i class="fa-sharp-duotone fa-light fa-file-spreadsheet text-spreadsheetClr"></i></a></li>
+    </ul>
+  </section>
+</nav>
+
+<main class="p-10">
+  <section id="logForm">
+    <!-- <form action="" method="post" >
+      <fieldset class="border border-2 border-logoClr p-3  ">
+        <legend class="text-txtWht">Maintaince | Repair <i class="fa-sharp-duotone fa-light fa-clipboard-list text-2xl text-logoClr"></i></legend>
+        <div class="flex  flex-col text-right gap-2">
+                  <label for="date">
+            Date: <input type="date" id="date" name="date">
+          </label>
+          <label for="mileage">
+            Mileage: <input type="number" id="mileage" name="mileage" placeholder="Enter Mileage" class="text-center">
+          </label>
+
+          <label for="type">
+            Type:  <select name="type" id="type" class="text-center w-40">
+                        <option>-- choose type--</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Repair">Repair</option>
+                    </select>
+              </label>
+                       <label for="carlocation">
+            Location: <select name="VehicleSide" id="VehicleSide"  class="text-center w-40">
+                        <option>-- car location --</option>
+                        <option>Front-Driver</option>
+                        <option>Front-Pass</option>
+                        <option>Rear-Driver</option>
+                        <option>Rear-Pass</option>
+                        <option>Front-(Drive|Pass)</option>
+                        <option>Rear-(Drive|Pass)</option>
+                        <option>Engine</option>
+                        <option>Transmission</option>
+                    </select>
+           </label>
+              <label for="carlocation">
+            Vehicle:<select name="" id="" class="text-center w-40">
+              <option value="">-- choose a car --</option>
+              <option value="HP07">Honda Pilot 2007</option>
+              <option value="HO10">Honda Odyssey 2010</option>
+            </select></label>
+          <label for="Notes_Issues">Notes/Issues <br><input type="text" id="Notes_Issues" name="Cost" placeholder="Issues/ Concerns/ Reminders" class="w-52 h-20"></label>
+    </div>
+        <button type="submit" class="bg-black text-logoClr p-3 mt-5 rounded-lg hover:bg-gray-800">Submit</button>
+      </fieldset>
+    </form> -->
+
+    <form action="" method="post" class="w-full flex justify-center">
+  <fieldset
+    class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4"
+  >
+    <legend class="px-2 text-txtWht text-sm sm:text-base">
+      Maintaince | Repair
+      <i class="fa-sharp-duotone fa-light fa-clipboard-list text-2xl text-logoClr"></i> | <i class="fa-duotone fa-solid fa-car-wrench  text-2xl text-logoClr"></i>
+    </legend>
+
+    <!-- Form Grid (responsive) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="MaintainceRepair">
+      <!-- Date -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="date" class="text-txtWht text-center">Date</label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Mileage -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="mileage" class="text-txtWht text-center">Mileage</label>
+        <input
+          type="number"
+          id="mileage"
+          name="mileage"
+          placeholder="Enter Mileage"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Type -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="type" class="text-txtWht text-center">Type</label>
+        <select
+          name="type"
+          id="type"
+          class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        >
+          <option>-- choose type --</option>
+          <option value="Maintenance">Maintenance</option>
+          <option value="Repair">Repair</option>
+        </select>
+      </div>
+
+      <!-- Location -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="VehicleSide" class="text-txtWht text-center">Location</label>
+        <select
+          name="VehicleSide"
+          id="VehicleSide"
+          class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        >
+          <option>-- car location --</option>
+          <option>Front-Driver</option>
+          <option>Front-Pass</option>
+          <option>Rear-Driver</option>
+          <option>Rear-Pass</option>
+          <option>Front-(Drive|Pass)</option>
+          <option>Rear-(Drive|Pass)</option>
+          <option>Engine</option>
+          <option>Transmission</option>
+        </select>
+      </div>
+
+      <!-- Vehicle (full width on sm+) -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="vehicle" class="text-txtWht text-center">Vehicle</label>
+        <select
+          name="vehicle"
+          id="vehicle"
+          class="w-full max-w-sm text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        >
+          <option value="">-- choose a car --</option>
+          <option value="HP07">Honda Pilot 2007</option>
+          <option value="HO10">Honda Odyssey 2010</option>
+        </select>
+      </div>
+
+         <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="mileage" class="text-txtWht text-center">Parts</label>
+        <input
+          type="number"
+          id="mileage"
+          name="mileage"
+          placeholder="Enter Parts Replaced"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Notes (full width) -->
+      <div class="w-full sm:col-span-2 flex flex-col items-center gap-2">
+        <label for="Notes_Issues" class="text-txtWht text-center">Notes / Issues</label>
+        <textarea
+          id="Notes_Issues"
+          name="Notes_Issues"
+          placeholder="Issues / Concerns / Reminders"
+          class="w-full rounded-md border border-logoClr bg-transparent text-txtWht p-3 min-h-[110px] max-w-xl placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        ></textarea>
+      </div>
+    </div>
+
+
+
+
+    <div  class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="Service">
+
+     <!-- Service -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="date" class="text-txtWht text-center">Service</label>
+        <input
+          type="text"
+          id="date"
+          name="date"
+          placeholder="Who did the Maintaince | Repair ?"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Address -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="mileage" class="text-txtWht text-center">Address</label>
+        <input
+          type="number"
+          id="mileage"
+          name="mileage"
+          placeholder="Enter Mileage"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Cost -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="type" class="text-txtWht text-center">Cost</label>
+             <input
+          type="number"
+          id="mileage"
+          name="mileage"
+          placeholder="Labor Cost"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Notes -->
+
+         <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="mileage" class="text-txtWht text-center"></label>
+        <input disabled
+          type="number"
+          id="mileage"
+          name="mileage"
+          placeholder=""
+          class="hidden w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3 mt-2 rounded-lg hover:bg-gray-800 transition"
+    >
+      Submit
+    </button>
+  </fieldset>
+</form>
+<section>
+
+</section>
+
+
+  </section>
+  <section class="flex justify-center pt-2  text-black">
+    <ul class="flex flex-row gap-5 text-lg bg-black p-2 rounded-full text-logoClr">
+      <li><i class="fa-utility fa-semibold fa-circle-plus"></i></li>
+    </ul>
+  </section>
+
+  <section id="partsForm">
+    <form action="" method="post" class=" flex justify-center">
+      <fieldset  class="border border-2 border-logoClrBlue p-3 flex flex-col gap-3">
+        <legend class="text-txtWht">Parts <i class="fa-duotone fa-thin fa-gears text-3xl text-logoClrBlue"></i></legend>
+        <div class="flex gap-2 text-center">
+                  <label for="date">
+            Date: <input type="date" id="date" name="date" class="text-center w-40" >
+          </label>
+          <label for="mileage">
+            Parts: <input type="text" id="mileage" name="mileage" placeholder="part name" class="text-center w-40">
+          </label>
+        </div>
+      <div class="flex gap-2 justify-center text-center">
+                  <label for="date">
+            Brand: <br><input type="text" id="date" name="date" placeholder="part brand" class="text-center w-40" >
+          </label>
+          <label for="mileage">
+            Cost: <br><input type="number" id="mileage" name="mileage" placeholder="24.87" class="text-center w-40">
+          </label>
+        </div>
+        <div class="flex gap-2 justify-center text-center">
+                  <label for="date">
+            Location: <br><select name="VehicleSide" id="VehicleSide"  class="text-center w-40">
+                        <option>-- car location --</option>
+                        <option>Front-Driver</option>
+                        <option>Front-Pass</option>
+                        <option>Rear-Driver</option>
+                        <option>Rear-Pass</option>
+                        <option>Front-(Drive|Pass)</option>
+                        <option>Rear-(Drive|Pass)</option>
+                        <option>Engine</option>
+                        <option>Transmission</option>
+                        </select>
+          </label>
+          <label for="mileage">
+           Obtained : <br><input type="number" id="mileage" name="mileage" placeholder="place purchased" class="text-center w-40">
+          </label>
+        </div>
+         <div class="flex flex-col items-center text-center">
+        
+              <label for="carlocation">
+            Vehicle: <br><select name="" id="" class="text-center w-40">
+              <option value="">-- which car --</option>
+              <option value="HP07">Honda Pilot 2007</option>
+              <option value="HO10">Honda Odyssey 2010</option>
+            </select></label>
+          <label for="Notes_Issues">Notes/Issues <br><input type="text" id="Notes_Issues" name="Cost" placeholder="Issues/ Concerns/ Reminders" class="w-52 h-20"></label>
+    </div>
+                <button type="submit" class="bg-black text-logoClrBlue p-3 mt-5 rounded-lg hover:bg-gray-800">Submit</button>
+      </fieldset>
+     </form>
+  </section>
+</main>
+    
+</body>
+</html>
