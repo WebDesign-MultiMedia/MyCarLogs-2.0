@@ -7,6 +7,7 @@
   <link href="./src/output.css" rel="stylesheet">
   <!-- Awsome Font -->
    <script src="https://kit.fontawesome.com/225318ecee.js" crossorigin="anonymous"></script>
+
 </head>
 <body class="bg-gray-800">
  
@@ -23,49 +24,6 @@
 
 <main class="p-10">
   <section id="logForm">
-    <!-- <form action="" method="post" >
-      <fieldset class="border border-2 border-logoClr p-3  ">
-        <legend class="text-txtWht">Maintaince | Repair <i class="fa-sharp-duotone fa-light fa-clipboard-list text-2xl text-logoClr"></i></legend>
-        <div class="flex  flex-col text-right gap-2">
-                  <label for="date">
-            Date: <input type="date" id="date" name="date">
-          </label>
-          <label for="mileage">
-            Mileage: <input type="number" id="mileage" name="mileage" placeholder="Enter Mileage" class="text-center">
-          </label>
-
-          <label for="type">
-            Type:  <select name="type" id="type" class="text-center w-40">
-                        <option>-- choose type--</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Repair">Repair</option>
-                    </select>
-              </label>
-                       <label for="carlocation">
-            Location: <select name="VehicleSide" id="VehicleSide"  class="text-center w-40">
-                        <option>-- car location --</option>
-                        <option>Front-Driver</option>
-                        <option>Front-Pass</option>
-                        <option>Rear-Driver</option>
-                        <option>Rear-Pass</option>
-                        <option>Front-(Drive|Pass)</option>
-                        <option>Rear-(Drive|Pass)</option>
-                        <option>Engine</option>
-                        <option>Transmission</option>
-                    </select>
-           </label>
-              <label for="carlocation">
-            Vehicle:<select name="" id="" class="text-center w-40">
-              <option value="">-- choose a car --</option>
-              <option value="HP07">Honda Pilot 2007</option>
-              <option value="HO10">Honda Odyssey 2010</option>
-            </select></label>
-          <label for="Notes_Issues">Notes/Issues <br><input type="text" id="Notes_Issues" name="Cost" placeholder="Issues/ Concerns/ Reminders" class="w-52 h-20"></label>
-    </div>
-        <button type="submit" class="bg-black text-logoClr p-3 mt-5 rounded-lg hover:bg-gray-800">Submit</button>
-      </fieldset>
-    </form> -->
-
     <form action="" method="post" class="w-full flex justify-center">
   <fieldset
     class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4"
@@ -172,10 +130,7 @@
     </div>
 
 
-
-
     <div  class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="Service">
-
      <!-- Service -->
       <div class="w-full max-w-sm flex flex-col items-center gap-2">
         <label for="date" class="text-txtWht text-center">Service</label>
@@ -240,65 +195,151 @@
 
 
   </section>
-  <section class="flex justify-center pt-2  text-black">
-    <ul class="flex flex-row gap-5 text-lg bg-black p-2 rounded-full text-logoClr">
-      <li><i class="fa-utility fa-semibold fa-circle-plus"></i></li>
-    </ul>
-  </section>
+
 
   <section id="partsForm">
-    <form action="" method="post" class=" flex justify-center">
-      <fieldset  class="border border-2 border-logoClrBlue p-3 flex flex-col gap-3">
-        <legend class="text-txtWht">Parts <i class="fa-duotone fa-thin fa-gears text-3xl text-logoClrBlue"></i></legend>
-        <div class="flex gap-2 text-center">
-                  <label for="date">
-            Date: <input type="date" id="date" name="date" class="text-center w-40" >
-          </label>
-          <label for="mileage">
-            Parts: <input type="text" id="mileage" name="mileage" placeholder="part name" class="text-center w-40">
-          </label>
-        </div>
-      <div class="flex gap-2 justify-center text-center">
-                  <label for="date">
-            Brand: <br><input type="text" id="date" name="date" placeholder="part brand" class="text-center w-40" >
-          </label>
-          <label for="mileage">
-            Cost: <br><input type="number" id="mileage" name="mileage" placeholder="24.87" class="text-center w-40">
-          </label>
-        </div>
-        <div class="flex gap-2 justify-center text-center">
-                  <label for="date">
-            Location: <br><select name="VehicleSide" id="VehicleSide"  class="text-center w-40">
-                        <option>-- car location --</option>
-                        <option>Front-Driver</option>
-                        <option>Front-Pass</option>
-                        <option>Rear-Driver</option>
-                        <option>Rear-Pass</option>
-                        <option>Front-(Drive|Pass)</option>
-                        <option>Rear-(Drive|Pass)</option>
-                        <option>Engine</option>
-                        <option>Transmission</option>
-                        </select>
-          </label>
-          <label for="mileage">
-           Obtained : <br><input type="number" id="mileage" name="mileage" placeholder="place purchased" class="text-center w-40">
-          </label>
-        </div>
-         <div class="flex flex-col items-center text-center">
+    <form action="" method="post" class=" w-full flex justify-center">
+      <fieldset  class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4">
+        <legend class="px-2 text-txtWht text-sm sm:text-base">Parts <i class="fa-duotone fa-thin fa-gears text-3xl text-logoClrBlue"></i></legend>
         
-              <label for="carlocation">
-            Vehicle: <br><select name="" id="" class="text-center w-40">
-              <option value="">-- which car --</option>
-              <option value="HP07">Honda Pilot 2007</option>
-              <option value="HO10">Honda Odyssey 2010</option>
-            </select></label>
-          <label for="Notes_Issues">Notes/Issues <br><input type="text" id="Notes_Issues" name="Cost" placeholder="Issues/ Concerns/ Reminders" class="w-52 h-20"></label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="MaintainceRepair">
+    
+        <!-- Date -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="date" class="text-txtWht text-center">Date</label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Part -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="parts" class="text-txtWht text-center">Parts replaced</label>
+        <input
+          type="text"
+          id="parts"
+          name="parts"
+          placeholder="Enter Parts replaced"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <!-- Brand -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="brand" class="text-txtWht text-center">Part Brand</label>
+        <input
+        type="text"
+        id="brand"
+        name="brand"
+        placeholder="Enter Parts replaced"
+        class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+      />
+      </div>
+
+      <!-- Location -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="VehicleSide" class="text-txtWht text-center">Parts Location</label>
+        <select
+          name="VehicleSide"
+          id="VehicleSide"
+          class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        >
+          <option>-- car location --</option>
+          <option>Front-Driver</option>
+          <option>Front-Pass</option>
+          <option>Rear-Driver</option>
+          <option>Rear-Pass</option>
+          <option>Front-(Drive|Pass)</option>
+          <option>Rear-(Drive|Pass)</option>
+          <option>Engine</option>
+          <option>Transmission</option>
+        </select>
+      </div>
+
+      <!-- Vehicle (full width on sm+) -->
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="vehicle" class="text-txtWht text-center">Vehicle</label>
+        <select
+          name="vehicle"
+          id="vehicle"
+          class="w-full max-w-sm text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        >
+          <option value="">-- choose a car --</option>
+          <option value="HP07">Honda Pilot 2007</option>
+          <option value="HO10">Honda Odyssey 2010</option>
+        </select>
+      </div>
+
+         <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="mileage" class="text-txtWht text-center">Price</label>
+        <input
+          type="text"
+          id="price"
+          name="price"
+          placeholder="$ Enter Price of Parts"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
+
+      <div class="w-full max-w-sm flex flex-col items-center gap-2">
+        <label for="purchased" class="text-txtWht text-center">Parts Bought:</label>
+        <input
+          type="text"
+          id="purchased"
+          name="purchased"
+          placeholder="purchased at? (Amazon, Autozone, AdvaAuto ...)"
+          class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+        />
+      </div>
     </div>
-                <button type="submit" class="bg-black text-logoClrBlue p-3 mt-5 rounded-lg hover:bg-gray-800">Submit</button>
-      </fieldset>
+
+    <button
+      type="submit"
+      class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3 mt-2 rounded-lg hover:bg-gray-800 transition"
+    >
+      Submit      </fieldset>
      </form>
   </section>
 </main>
     
+    <!-- forms to add if needde -->
+    <!-- <form action="" method="post" class="w-full flex justify-center">
+      <fieldset     class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4">
+      <legend class="px-2 text-txtWht text-sm sm:text-base">
+        <i class="fa-sharp-duotone fa-light fa-clipboard-list text-2xl text-logoClr"></i> | <i class="fa-duotone fa-solid fa-car-wrench  text-2xl text-logoClr"></i>
+
+     </legend> -->
+    <!-- Form Grid (responsive) -->
+      <!-- <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="MaintainceRepair">
+        <div class="w-full max-w-sm flex flex-col items-center gap-2">
+          <label for="" class="text-txtWht text-center">Date</label>
+          <input
+            type="date"
+            id=""
+            name=""
+            class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr"
+          />
+        </div>
+  
+        <div class="w-full max-w-sm flex flex-col items-center gap-2">
+          <label for="" class="text-txtWht text-center">Mileage</label>
+          <input
+            type="number"
+            id=""
+            name=""
+            placeholder=" "
+            class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"
+          />
+        </div>
+    </div>
+      </fieldset>
+    </form> -->
+       <!-- ManRep JS -->
+   <script src="./ManRep.js"></script>
 </body>
 </html>
+
+
