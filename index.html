@@ -8,10 +8,10 @@
 </head>
 <body class="bg-gray-800">
 
-<nav class="flex flex-row justify-between items-center relative top-4 p-2">
-  <img src="./imgs/spare-parts.png" alt="" class="w-20">
+<nav class="flex flex-row justify-between items-center relative top-4 px-3 py-2 sm:px-4">
+  <img src="./imgs/spare-parts.png" alt="" class="w-14 sm:w-20">
   <section>
-    <ul class="flex flex-row gap-10 text-4xl bg-black p-5 rounded-full text-logoClr">
+    <ul class="flex flex-row gap-5 sm:gap-10 text-2xl sm:text-4xl bg-black px-4 py-3 sm:p-5 rounded-full text-logoClr">
       <li id="navClipboard" class="cursor-pointer"><i class="fa-sharp-duotone fa-light fa-clipboard-list"></i></li>
       <li id="navGears" class="cursor-pointer"><i class="fa-sharp-duotone fa-light fa-gears text-logoClrBlue"></i></li>
       <li id="navSpreadsheet" class="cursor-pointer"><i class="fa-sharp-duotone fa-light fa-file-spreadsheet text-spreadsheetClr"></i></li>
@@ -19,7 +19,7 @@
   </section>
 </nav>
 
-<main class="p-10">
+<main class="p-4 sm:p-8 lg:p-10">
 
   <!-- Maintenance / Repair Form -->
   <section id="logForm">
@@ -215,14 +215,34 @@
 
   <!-- Records View -->
   <section id="records" style="display:none">
-    <div class="w-full max-w-4xl mx-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-txtWht text-2xl">Records</h2>
-        <button id="clearRecords"
-          class="text-sm text-red-400 border border-red-400 px-3 py-1 rounded hover:bg-red-900 transition">
-          Clear All
+    <div class="w-full max-w-5xl mx-auto">
+
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-txtWht text-xl sm:text-2xl">Records</h2>
+        <button id="refreshRecords"
+          class="text-sm text-logoClr border border-logoClr px-3 py-1 rounded hover:bg-gray-700 transition">
+          Refresh
         </button>
       </div>
+
+      <!-- Filters -->
+      <div class="flex flex-col gap-3 mb-6">
+        <!-- Time filter -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-gray-400 text-xs uppercase tracking-widest w-14">Time</span>
+          <button class="filter-time active-time px-3 py-1 rounded-full text-xs sm:text-sm border border-logoClr text-logoClr transition" data-days="0">All</button>
+          <button class="filter-time px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-days="30">Last 30 Days</button>
+          <button class="filter-time px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-days="90">Last 90 Days</button>
+        </div>
+        <!-- Vehicle filter -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-gray-400 text-xs uppercase tracking-widest w-14">Vehicle</span>
+          <button class="filter-vehicle active-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-logoClr text-logoClr transition" data-vehicle="all">All</button>
+          <button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-vehicle="HP07">Pilot &apos;07</button>
+          <button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-vehicle="HO10">Odyssey &apos;10</button>
+        </div>
+      </div>
+
       <div id="recordsContent"></div>
     </div>
   </section>
