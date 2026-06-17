@@ -24,45 +24,44 @@
   <!-- Maintenance / Repair Form -->
   <section id="logForm">
     <form action="" method="post" class="w-full flex justify-center">
-      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4">
-        <legend class="px-2 text-txtWht text-sm sm:text-base">
-          Maintaince | Repair
-          <i class="fa-sharp-duotone fa-light fa-clipboard-list text-2xl text-logoClr"></i> |
-          <i class="fa-duotone fa-solid fa-car-wrench text-2xl text-logoClr"></i>
+      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-xl flex flex-col gap-5">
+        <legend class="px-2 text-txtWht text-sm sm:text-base font-medium">
+          Maintenance | Repair
+          <i class="fa-sharp-duotone fa-light fa-clipboard-list text-xl text-logoClr ml-1"></i>
         </legend>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="MaintainceRepair">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="MaintainceRepair">
           <!-- Date -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="date" class="text-txtWht text-center">Date</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="date" class="text-txtWht text-sm font-medium">Date</label>
             <input type="date" id="date" name="date"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Mileage -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="mileage" class="text-txtWht text-center">Mileage</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="mileage" class="text-txtWht text-sm font-medium">Mileage</label>
             <input type="number" id="mileage" name="mileage" placeholder="Enter Mileage"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Type -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="type" class="text-txtWht text-center">Type</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="type" class="text-txtWht text-sm font-medium">Type</label>
             <select name="type" id="type"
-              class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option>-- choose type --</option>
+              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
+              <option value="">-- choose type --</option>
               <option value="Maintenance">Maintenance</option>
               <option value="Repair">Repair</option>
             </select>
           </div>
 
           <!-- Location -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="VehicleSide" class="text-txtWht text-center">Location</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="VehicleSide" class="text-txtWht text-sm font-medium">Location</label>
             <select name="VehicleSide" id="VehicleSide"
-              class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option>-- car location --</option>
+              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
+              <option value="">-- car location --</option>
               <option>Front-Driver</option>
               <option>Front-Pass</option>
               <option>Rear-Driver</option>
@@ -75,57 +74,60 @@
           </div>
 
           <!-- Vehicle -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="vehicle" class="text-txtWht text-center">Vehicle</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="vehicle" class="text-txtWht text-sm font-medium">Vehicle</label>
             <select name="vehicle" id="vehicle"
-              class="w-full max-w-sm text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr">
+              class="vehicle-select w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
               <option value="">-- choose a car --</option>
-              <option value="HP07">Honda Pilot 2007</option>
-              <option value="HO10">Honda Odyssey 2010</option>
             </select>
+            <button type="button" class="open-vehicle-modal text-xs text-logoClr hover:underline transition self-start">
+              + Add / Remove Vehicle
+            </button>
           </div>
 
           <!-- Parts Count -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="partCount" class="text-txtWht text-center">Parts</label>
-            <input type="number" id="partCount" name="partCount" placeholder="# of Parts Replaced"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="flex flex-col gap-1.5">
+            <label for="partCount" class="text-txtWht text-sm font-medium">Parts Replaced</label>
+            <input type="number" id="partCount" name="partCount" placeholder="# of parts"
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Notes -->
-          <div class="w-full sm:col-span-2 flex flex-col items-center gap-2">
-            <label for="Notes_Issues" class="text-txtWht text-center">Notes / Issues</label>
-            <textarea id="Notes_Issues" name="Notes_Issues" placeholder="Issues / Concerns / Reminders"
-              class="w-full rounded-md border border-logoClr bg-transparent text-txtWht p-3 min-h-[110px] max-w-xl placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr"></textarea>
+          <div class="sm:col-span-2 flex flex-col gap-1.5">
+            <label for="Notes_Issues" class="text-txtWht text-sm font-medium">Notes / Issues</label>
+            <textarea id="Notes_Issues" name="Notes_Issues" placeholder="Issues, concerns, reminders..."
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 min-h-[120px] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr resize-none"></textarea>
           </div>
         </div>
 
-        <!-- Service Section (toggled by car-wrench icon) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="Service">
-          <!-- Who did the job -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="service" class="text-txtWht text-center">Service</label>
-            <input type="text" id="service" name="service" placeholder="Who did the Job?"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-          </div>
+        <!-- Service Info Toggle -->
+        <button type="button" id="serviceToggleBtn"
+          class="flex items-center justify-center gap-2 w-full border border-dashed border-logoClr/50 text-logoClr text-sm py-2.5 rounded-lg hover:border-logoClr hover:bg-logoClr/10 transition">
+          <i class="fa-duotone fa-solid fa-car-wrench"></i>
+          <span id="serviceToggleLabel">+ Add Service Info</span>
+        </button>
 
-          <!-- Address -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="address" class="text-txtWht text-center">Address</label>
-            <input type="text" id="address" name="address" placeholder="Enter Address"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+        <!-- Service Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="Service">
+          <div class="flex flex-col gap-1.5">
+            <label for="service" class="text-txtWht text-sm font-medium">Service Provider</label>
+            <input type="text" id="service" name="service" placeholder="Who did the job?"
+              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
           </div>
-
-          <!-- Cost -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="cost" class="text-txtWht text-center">Cost</label>
-            <input type="text" id="cost" name="cost" placeholder="Labor Cost"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="flex flex-col gap-1.5">
+            <label for="address" class="text-txtWht text-sm font-medium">Address</label>
+            <input type="text" id="address" name="address" placeholder="Shop address"
+              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="cost" class="text-txtWht text-sm font-medium">Labor Cost</label>
+            <input type="text" id="cost" name="cost" placeholder="$ amount"
+              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
           </div>
         </div>
 
         <button type="submit"
-          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3 mt-2 rounded-lg hover:bg-gray-800 transition">
+          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3.5 rounded-xl text-base font-semibold hover:bg-gray-900 active:scale-95 transition">
           Submit
         </button>
       </fieldset>
@@ -135,39 +137,39 @@
   <!-- Parts Form -->
   <section id="partsFormtwo" style="display:none">
     <form action="" method="post" class="w-full flex justify-center">
-      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-lg flex flex-col gap-4">
-        <legend class="px-2 text-txtWht text-sm sm:text-base">
-          Parts <i class="fa-duotone fa-thin fa-gears text-3xl text-logoClrBlue"></i>
+      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-xl flex flex-col gap-5">
+        <legend class="px-2 text-txtWht text-sm sm:text-base font-medium">
+          Parts <i class="fa-duotone fa-thin fa-gears text-2xl text-logoClrBlue ml-1"></i>
         </legend>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 place-items-center" id="partsGrid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="partsGrid">
           <!-- Date -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="partsDate" class="text-txtWht text-center">Date</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="partsDate" class="text-txtWht text-sm font-medium">Date</label>
             <input type="date" id="partsDate" name="partsDate"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Part Name -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="parts" class="text-txtWht text-center">Parts Replaced</label>
-            <input type="text" id="parts" name="parts" placeholder="Enter Parts Replaced"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="flex flex-col gap-1.5">
+            <label for="parts" class="text-txtWht text-sm font-medium">Part Name</label>
+            <input type="text" id="parts" name="parts" placeholder="e.g. Brake pads"
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Brand -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="brand" class="text-txtWht text-center">Part Brand</label>
-            <input type="text" id="brand" name="brand" placeholder="Enter Part Brand"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="flex flex-col gap-1.5">
+            <label for="brand" class="text-txtWht text-sm font-medium">Brand</label>
+            <input type="text" id="brand" name="brand" placeholder="e.g. Bosch, ACDelco"
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Parts Location -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="partsVehicleSide" class="text-txtWht text-center">Parts Location</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="partsVehicleSide" class="text-txtWht text-sm font-medium">Install Location</label>
             <select name="partsVehicleSide" id="partsVehicleSide"
-              class="w-full text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option>-- car location --</option>
+              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
+              <option value="">-- car location --</option>
               <option>Front-Driver</option>
               <option>Front-Pass</option>
               <option>Rear-Driver</option>
@@ -180,33 +182,34 @@
           </div>
 
           <!-- Vehicle -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="partsVehicle" class="text-txtWht text-center">Vehicle</label>
+          <div class="flex flex-col gap-1.5">
+            <label for="partsVehicle" class="text-txtWht text-sm font-medium">Vehicle</label>
             <select name="partsVehicle" id="partsVehicle"
-              class="w-full max-w-sm text-center rounded-md border border-logoClr bg-black/30 text-txtWht p-2 focus:outline-none focus:ring-2 focus:ring-logoClr">
+              class="vehicle-select w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
               <option value="">-- choose a car --</option>
-              <option value="HP07">Honda Pilot 2007</option>
-              <option value="HO10">Honda Odyssey 2010</option>
             </select>
+            <button type="button" class="open-vehicle-modal text-xs text-logoClr hover:underline transition self-start">
+              + Add / Remove Vehicle
+            </button>
           </div>
 
           <!-- Price -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="price" class="text-txtWht text-center">Price</label>
-            <input type="text" id="price" name="price" placeholder="$ Enter Price of Parts"
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="flex flex-col gap-1.5">
+            <label for="price" class="text-txtWht text-sm font-medium">Price</label>
+            <input type="text" id="price" name="price" placeholder="$ amount"
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
 
           <!-- Purchased At -->
-          <div class="w-full max-w-sm flex flex-col items-center gap-2">
-            <label for="purchased" class="text-txtWht text-center">Parts Bought:</label>
-            <input type="text" id="purchased" name="purchased" placeholder="Amazon, Autozone, AdvAuto..."
-              class="w-full text-center rounded-md border border-logoClr bg-transparent text-txtWht p-2 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="sm:col-span-2 flex flex-col gap-1.5">
+            <label for="purchased" class="text-txtWht text-sm font-medium">Purchased At</label>
+            <input type="text" id="purchased" name="purchased" placeholder="Amazon, AutoZone, Advance Auto..."
+              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
           </div>
         </div>
 
         <button type="submit"
-          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3 mt-2 rounded-lg hover:bg-gray-800 transition">
+          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3.5 rounded-xl text-base font-semibold hover:bg-gray-900 active:scale-95 transition">
           Submit
         </button>
       </fieldset>
@@ -234,12 +237,17 @@
           <button class="filter-time px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-days="30">Last 30 Days</button>
           <button class="filter-time px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-days="90">Last 90 Days</button>
         </div>
-        <!-- Vehicle filter -->
+        <!-- Vehicle filter (populated by JS) -->
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-gray-400 text-xs uppercase tracking-widest w-14">Vehicle</span>
-          <button class="filter-vehicle active-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-logoClr text-logoClr transition" data-vehicle="all">All</button>
-          <button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-vehicle="HP07">Pilot &apos;07</button>
-          <button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-vehicle="HO10">Odyssey &apos;10</button>
+          <div id="vehicleFilterRow" class="flex flex-wrap gap-2"></div>
+        </div>
+        <!-- Type filter -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-gray-400 text-xs uppercase tracking-widest w-14">Type</span>
+          <button class="filter-type px-3 py-1 rounded-full text-xs sm:text-sm border border-logoClr text-logoClr transition" data-type="all">All</button>
+          <button class="filter-type px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-type="maintenance">Maintenance / Repair</button>
+          <button class="filter-type px-3 py-1 rounded-full text-xs sm:text-sm border border-gray-600 text-gray-400 hover:border-logoClr hover:text-logoClr transition" data-type="parts">Parts</button>
         </div>
       </div>
 
@@ -248,6 +256,25 @@
   </section>
 
 </main>
+
+<!-- Vehicle Manager Modal -->
+<div id="vehicleModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden p-4">
+  <div class="bg-gray-800 border border-logoClr rounded-xl p-6 w-full max-w-sm">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-txtWht text-lg">Manage Vehicles</h3>
+      <button id="closeVehicleModal" class="text-gray-400 hover:text-txtWht text-3xl leading-none">&times;</button>
+    </div>
+    <ul id="vehicleList" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></ul>
+    <div class="flex gap-2">
+      <input type="text" id="newVehicleInput" placeholder="e.g. Toyota Camry 2020"
+        class="flex-1 rounded-md border border-logoClr bg-transparent text-txtWht p-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+      <button type="button" id="addVehicleBtn"
+        class="bg-logoClr text-gray-900 px-3 py-2 rounded-md text-sm font-semibold hover:opacity-80 transition whitespace-nowrap">
+        Add
+      </button>
+    </div>
+  </div>
+</div>
 
 <script src="./ManRep.js"></script>
 <script src="./parts.js"></script>

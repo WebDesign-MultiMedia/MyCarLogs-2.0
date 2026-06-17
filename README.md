@@ -1,55 +1,104 @@
 # MyCarLogs 2.0
 
-A simple, offline-first car maintenance tracker that runs entirely in your browser — no account, no server, no fees.
-
 **Live Site:** https://webdesign-multimedia.github.io/MyCarLogs-2.0/
+
+---
+
+## Purpose
+
+MyCarLogs 2.0 was built out of a real need — keeping track of what has been done to your vehicles, when it was done, and how much it cost. Most people rely on memory or paper receipts that get lost. This app gives you one place to log every oil change, brake job, part swap, or repair so you always have a clear history of your vehicles' health.
+
+Whether you're doing the work yourself or taking it to a shop, MyCarLogs helps you:
+
+- Know exactly when maintenance is due based on past records
+- Track costs over time per vehicle
+- Keep a parts history so you know what brand was installed and where you bought it
+- Have documentation ready when selling a vehicle or disputing a repair
 
 ---
 
 ## What It Does
 
-MyCarLogs lets you keep a running history of everything done to your vehicles — oil changes, tire rotations, brake jobs, part replacements, and more. All data is saved locally in your browser using `localStorage`, so your records stay private and are always available without an internet connection.
+### Maintenance / Repair Log
+Every time work is done on a vehicle, you fill out one form:
 
-### Two Logs in One
+| Field | What it captures |
+|---|---|
+| Date | When the work was done |
+| Mileage | Odometer reading at time of service |
+| Type | Maintenance (scheduled) or Repair (something broke) |
+| Location | Which part of the car — Front-Driver, Engine, Transmission, etc. |
+| Vehicle | Which car was serviced |
+| Parts | Number of parts replaced |
+| Notes | Any issues, concerns, or reminders for next time |
+| Service Info *(optional)* | Who did the job, shop address, and labor cost |
 
-**Maintenance / Repair Log**
-Track service events including:
-- Date and mileage at time of service
-- Type (Maintenance or Repair)
-- Vehicle location (Front-Driver, Rear-Pass, Engine, Transmission, etc.)
-- Which vehicle was serviced
-- Number of parts replaced
-- Notes / issues / reminders
-- Optional service info — who did the job, shop address, and labor cost
+Service info is hidden by default and revealed with a tap — useful when a shop does the work rather than a DIY job.
 
-**Parts Log**
-Track individual parts replaced including:
-- Date and vehicle
-- Part name, brand, and install location
-- Price paid and where it was purchased (Amazon, AutoZone, Advance Auto, etc.)
+### Parts Log
+Tracks individual parts separately from the service event:
+
+| Field | What it captures |
+|---|---|
+| Date | When the part was installed |
+| Part Name | What was replaced (e.g. brake pads, air filter) |
+| Brand | Manufacturer (Bosch, ACDelco, OEM, etc.) |
+| Install Location | Where on the vehicle the part went |
+| Vehicle | Which car it went into |
+| Price | What you paid |
+| Purchased At | Where you bought it (Amazon, AutoZone, Advance Auto, etc.) |
 
 ### Records View
-Click the spreadsheet icon in the nav to see all saved maintenance and parts records in a clean table, sorted most recent first. A "Clear All" button lets you wipe the history if needed.
+Click the spreadsheet icon to see everything logged. Records pull live from Google Sheets via SheetDB so you always see the full history, not just what's on your current device.
 
----
+**Filters available:**
+- **Time** — All / Last 30 Days / Last 90 Days
+- **Vehicle** — All or a specific vehicle
+- **Type** — All / Maintenance & Repair / Parts only
 
-## Vehicles Tracked
+On mobile, records display as stacked cards. On desktop, they display as a full table.
 
-- Honda Pilot 2007
-- Honda Odyssey 2010
+### Vehicle Management
+Vehicles are not hardcoded. You can add any car at any time and remove ones you no longer own. Both the Maintenance and Parts forms stay in sync automatically. Vehicle filter buttons in the Records view also update to match.
 
 ---
 
 ## Tech Stack
 
-- **HTML / CSS** — Tailwind CSS v3
-- **JavaScript** — Vanilla JS, no frameworks
-- **Icons** — Font Awesome
-- **Storage** — Browser `localStorage`
+| Layer | Technology |
+|---|---|
+| Markup | HTML5 |
+| Styling | Tailwind CSS v3 |
+| Logic | Vanilla JavaScript (no frameworks) |
+| Icons | Font Awesome |
+| Data storage | Google Sheets via [SheetDB](https://sheetdb.io) API |
+| Local backup | Browser `localStorage` |
+
+Data is saved to a connected Google Sheet through the SheetDB API so records are persistent across devices and browsers. A local `localStorage` copy is also kept as a backup.
 
 ---
 
-## How to Use Locally
+## Navigation
+
+| Icon | Section |
+|---|---|
+| Clipboard | Maintenance / Repair log form |
+| Gears | Parts log form |
+| Spreadsheet | Records view with filters |
+
+---
+
+## Vehicles
+
+The default vehicles are:
+- Honda Pilot 2007
+- Honda Odyssey 2010
+
+You can add or remove any vehicle directly from the form using the **+ Add / Remove Vehicle** button. Changes apply to both forms and the Records filter instantly.
+
+---
+
+## Running Locally
 
 ```bash
 git clone https://github.com/WebDesign-MultiMedia/MyCarLogs-2.0.git
@@ -60,14 +109,4 @@ npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
 
 Then open `index.html` in your browser.
 
----
-
-## Navigation
-
-| Icon | Action |
-|------|--------|
-| Clipboard | Maintenance / Repair form |
-| Gears | Parts log form |
-| Spreadsheet | View all saved records |
-
-> The wrench icon inside the Maintenance form toggles the optional Service section (shop name, address, and labor cost).
+> To connect your own Google Sheet, replace the SheetDB endpoint in `ManRep.js` with your own API URL and match the column names to your sheet headers.
