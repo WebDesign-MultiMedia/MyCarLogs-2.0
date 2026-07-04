@@ -6,7 +6,7 @@
   <link href="./src/output.css" rel="stylesheet">
   <script src="https://kit.fontawesome.com/225318ecee.js" crossorigin="anonymous"></script>
 </head>
-<body class="bg-gray-800">
+<body class="bg-gray-800 bg-gradient-to-b from-gray-800 via-gray-800 to-gray-900 min-h-screen">
 
 <nav class="flex flex-row justify-between items-center relative top-4 px-3 py-2 sm:px-4">
   <img src="./imgs/spare-parts.png" alt="" class="w-14 sm:w-20">
@@ -24,195 +24,252 @@
   <!-- Maintenance / Repair Form -->
   <section id="logForm">
     <form action="" method="post" class="w-full flex justify-center">
-      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-xl flex flex-col gap-5">
-        <legend class="px-2 text-txtWht text-sm sm:text-base font-medium">
-          Maintenance | Repair
-          <i class="fa-sharp-duotone fa-light fa-clipboard-list text-xl text-logoClr ml-1"></i>
-        </legend>
+      <div class="w-full max-w-2xl relative rounded-2xl border border-white/10 bg-gradient-to-b from-gray-800/90 to-gray-900/95 shadow-2xl shadow-black/50 overflow-hidden">
+        <div class="h-1.5 bg-gradient-to-r from-logoClr via-emerald-300 to-logoClr"></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="MaintainceRepair">
-          <!-- Date -->
-          <div class="flex flex-col gap-1.5">
-            <label for="date" class="text-txtWht text-sm font-medium">Date</label>
-            <input type="date" id="date" name="date" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+        <fieldset class="p-5 sm:p-8 flex flex-col gap-6">
+          <legend class="sr-only">Maintenance / Repair</legend>
+
+          <div class="flex items-center gap-3.5">
+            <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-logoClr/15 border border-logoClr/30 text-logoClr text-lg">
+              <i class="fa-sharp-duotone fa-light fa-clipboard-list"></i>
+            </div>
+            <div>
+              <h2 class="text-txtWht text-lg sm:text-xl font-semibold tracking-tight">Maintenance &amp; Repair</h2>
+              <p class="text-gray-400 text-xs sm:text-sm">Log service work and keep your history up to date</p>
+            </div>
           </div>
 
-          <!-- Mileage -->
-          <div class="flex flex-col gap-1.5">
-            <label for="mileage" class="text-txtWht text-sm font-medium">Mileage</label>
-            <input type="number" id="mileage" name="mileage" placeholder="Enter Mileage" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="MaintainceRepair">
+            <!-- Date -->
+            <div class="flex flex-col gap-1.5">
+              <label for="date" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-calendar-days text-logoClr/70"></i> Date
+              </label>
+              <input type="date" id="date" name="date" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Mileage -->
+            <div class="flex flex-col gap-1.5">
+              <label for="mileage" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-gauge-high text-logoClr/70"></i> Mileage
+              </label>
+              <input type="number" id="mileage" name="mileage" placeholder="Enter Mileage" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Type -->
+            <div class="flex flex-col gap-1.5">
+              <label for="type" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-wrench text-logoClr/70"></i> Type
+              </label>
+              <select name="type" id="type" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150">
+                <option value="">-- choose type --</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Repair">Repair</option>
+              </select>
+            </div>
+
+            <!-- Location -->
+            <div class="flex flex-col gap-1.5">
+              <label for="VehicleSide" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-location-dot text-logoClr/70"></i> Location
+              </label>
+              <select name="VehicleSide" id="VehicleSide" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150">
+                <option value="">-- car location --</option>
+                <option>Front-Driver</option>
+                <option>Front-Pass</option>
+                <option>Rear-Driver</option>
+                <option>Rear-Pass</option>
+                <option>Front-(Drive|Pass)</option>
+                <option>Rear-(Drive|Pass)</option>
+                <option>Engine</option>
+                <option>Transmission</option>
+              </select>
+            </div>
+
+            <!-- Vehicle -->
+            <div class="flex flex-col gap-1.5">
+              <label for="vehicle" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-car text-logoClr/70"></i> Vehicle
+              </label>
+              <select name="vehicle" id="vehicle" required
+                class="vehicle-select w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150">
+                <option value="">-- choose a car --</option>
+              </select>
+              <button type="button" class="open-vehicle-modal text-xs text-logoClr hover:underline transition self-start">
+                + Add / Remove Vehicle
+              </button>
+            </div>
+
+            <!-- Parts Count -->
+            <div class="flex flex-col gap-1.5">
+              <label for="partCount" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-box text-logoClr/70"></i> Parts Replaced
+              </label>
+              <input type="text" id="partCount" name="partCount" placeholder="Name of the parts" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Notes -->
+            <div class="sm:col-span-2 flex flex-col gap-1.5">
+              <label for="Notes_Issues" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-note-sticky text-logoClr/70"></i> Notes / Issues
+              </label>
+              <textarea id="Notes_Issues" name="Notes_Issues" placeholder="Issues, concerns, reminders..." required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 min-h-[120px] placeholder:text-gray-500 focus:outline-none focus:border-logoClr focus:ring-2 focus:ring-logoClr/30 transition-colors duration-150 resize-none"></textarea>
+            </div>
           </div>
 
-          <!-- Type -->
-          <div class="flex flex-col gap-1.5">
-            <label for="type" class="text-txtWht text-sm font-medium">Type</label>
-            <select name="type" id="type" required
-              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option value="">-- choose type --</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Repair">Repair</option>
-            </select>
+          <!-- Service Info Toggle -->
+          <button type="button" id="serviceToggleBtn"
+            class="flex items-center justify-center gap-2 w-full border border-dashed border-logoClr/50 text-logoClr text-sm font-medium py-2.5 rounded-lg hover:border-logoClr hover:bg-logoClr/10 transition-colors duration-150">
+            <i class="fa-duotone fa-solid fa-car-wrench"></i>
+            <span id="serviceToggleLabel">+ Add Service Info</span>
+          </button>
+
+          <!-- Service Section -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 bg-red-400/5 border border-red-400/20 rounded-xl p-4 sm:p-5" id="Service">
+            <div class="flex flex-col gap-1.5">
+              <label for="service" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-user-tie text-red-400/70"></i> Service Provider
+              </label>
+              <input type="text" id="service" name="service" placeholder="Who did the job?"
+                class="w-full text-base rounded-lg border border-red-400/40 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/30 transition-colors duration-150" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="address" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-map-pin text-red-400/70"></i> Address
+              </label>
+              <input type="text" id="address" name="address" placeholder="Shop address"
+                class="w-full text-base rounded-lg border border-red-400/40 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/30 transition-colors duration-150" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="cost" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-dollar-sign text-red-400/70"></i> Labor Cost
+              </label>
+              <input type="text" id="cost" name="cost" placeholder="$ amount"
+                class="w-full text-base rounded-lg border border-red-400/40 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/30 transition-colors duration-150" />
+            </div>
           </div>
 
-          <!-- Location -->
-          <div class="flex flex-col gap-1.5">
-            <label for="VehicleSide" class="text-txtWht text-sm font-medium">Location</label>
-            <select name="VehicleSide" id="VehicleSide" required
-              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option value="">-- car location --</option>
-              <option>Front-Driver</option>
-              <option>Front-Pass</option>
-              <option>Rear-Driver</option>
-              <option>Rear-Pass</option>
-              <option>Front-(Drive|Pass)</option>
-              <option>Rear-(Drive|Pass)</option>
-              <option>Engine</option>
-              <option>Transmission</option>
-            </select>
-          </div>
-
-          <!-- Vehicle -->
-          <div class="flex flex-col gap-1.5">
-            <label for="vehicle" class="text-txtWht text-sm font-medium">Vehicle</label>
-            <select name="vehicle" id="vehicle" required
-              class="vehicle-select w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option value="">-- choose a car --</option>
-            </select>
-            <button type="button" class="open-vehicle-modal text-xs text-logoClr hover:underline transition self-start">
-              + Add / Remove Vehicle
-            </button>
-          </div>
-
-          <!-- Parts Count -->
-          <div class="flex flex-col gap-1.5">
-            <label for="partCount" class="text-txtWht text-sm font-medium">Parts Replaced</label>
-            <input type="text" id="partCount" name="partCount" placeholder="Name of the parts" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-          </div>
-
-          <!-- Notes -->
-          <div class="sm:col-span-2 flex flex-col gap-1.5">
-            <label for="Notes_Issues" class="text-txtWht text-sm font-medium">Notes / Issues</label>
-            <textarea id="Notes_Issues" name="Notes_Issues" placeholder="Issues, concerns, reminders..." required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 min-h-[120px] placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr resize-none"></textarea>
-          </div>
-        </div>
-
-        <!-- Service Info Toggle -->
-        <button type="button" id="serviceToggleBtn"
-          class="flex items-center justify-center gap-2 w-full border border-dashed border-logoClr/50 text-logoClr text-sm py-2.5 rounded-lg hover:border-logoClr hover:bg-logoClr/10 transition">
-          <i class="fa-duotone fa-solid fa-car-wrench"></i>
-          <span id="serviceToggleLabel">+ Add Service Info</span>
-        </button>
-
-        <!-- Service Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="Service">
-          <div class="flex flex-col gap-1.5">
-            <label for="service" class="text-txtWht text-sm font-medium">Service Provider</label>
-            <input type="text" id="service" name="service" placeholder="Who did the job?"
-              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="address" class="text-txtWht text-sm font-medium">Address</label>
-            <input type="text" id="address" name="address" placeholder="Shop address"
-              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label for="cost" class="text-txtWht text-sm font-medium">Labor Cost</label>
-            <input type="text" id="cost" name="cost" placeholder="$ amount"
-              class="w-full text-base rounded-lg border border-red-400 bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          </div>
-        </div>
-
-        <button type="submit"
-          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3.5 rounded-xl text-base font-semibold hover:bg-gray-900 active:scale-95 transition">
-          Submit
-        </button>
-      </fieldset>
+          <button type="submit"
+            class="w-full sm:w-2/3 mx-auto bg-gradient-to-r from-logoClr to-emerald-400 text-gray-900 p-3.5 rounded-xl text-base font-semibold shadow-lg shadow-logoClr/20 hover:shadow-xl hover:shadow-logoClr/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200">
+            Submit
+          </button>
+        </fieldset>
+      </div>
     </form>
   </section>
 
   <!-- Parts Form -->
   <section id="partsFormtwo" style="display:none">
     <form action="" method="post" class="w-full flex justify-center">
-      <fieldset class="w-full max-w-xl border-2 border-logoClr p-4 sm:p-6 rounded-xl flex flex-col gap-5">
-        <legend class="px-2 text-txtWht text-sm sm:text-base font-medium">
-          Parts <i class="fa-duotone fa-thin fa-gears text-2xl text-logoClrBlue ml-1"></i>
-        </legend>
+      <div class="w-full max-w-2xl relative rounded-2xl border border-white/10 bg-gradient-to-b from-gray-800/90 to-gray-900/95 shadow-2xl shadow-black/50 overflow-hidden">
+        <div class="h-1.5 bg-gradient-to-r from-logoClrBlue via-sky-300 to-logoClrBlue"></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="partsGrid">
-          <!-- Date -->
-          <div class="flex flex-col gap-1.5">
-            <label for="partsDate" class="text-txtWht text-sm font-medium">Date</label>
-            <input type="date" id="partsDate" name="partsDate" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+        <fieldset class="p-5 sm:p-8 flex flex-col gap-6">
+          <legend class="sr-only">Parts</legend>
+
+          <div class="flex items-center gap-3.5">
+            <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-logoClrBlue/15 border border-logoClrBlue/30 text-logoClrBlue text-lg">
+              <i class="fa-duotone fa-thin fa-gears"></i>
+            </div>
+            <div>
+              <h2 class="text-txtWht text-lg sm:text-xl font-semibold tracking-tight">Parts</h2>
+              <p class="text-gray-400 text-xs sm:text-sm">Track parts you've bought and where they went</p>
+            </div>
           </div>
 
-          <!-- Part Name -->
-          <div class="flex flex-col gap-1.5">
-            <label for="parts" class="text-txtWht text-sm font-medium">Part Name</label>
-            <input type="text" id="parts" name="parts" placeholder="e.g. Brake pads" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" id="partsGrid">
+            <!-- Date -->
+            <div class="flex flex-col gap-1.5">
+              <label for="partsDate" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-calendar-days text-logoClrBlue/70"></i> Date
+              </label>
+              <input type="date" id="partsDate" name="partsDate" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Part Name -->
+            <div class="flex flex-col gap-1.5">
+              <label for="parts" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-box text-logoClrBlue/70"></i> Part Name
+              </label>
+              <input type="text" id="parts" name="parts" placeholder="e.g. Brake pads" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Brand -->
+            <div class="flex flex-col gap-1.5">
+              <label for="brand" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-tag text-logoClrBlue/70"></i> Brand
+              </label>
+              <input type="text" id="brand" name="brand" placeholder="e.g. Bosch, ACDelco" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Parts Location -->
+            <div class="flex flex-col gap-1.5">
+              <label for="partsVehicleSide" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-location-dot text-logoClrBlue/70"></i> Install Location
+              </label>
+              <select name="partsVehicleSide" id="partsVehicleSide" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150">
+                <option value="">-- car location --</option>
+                <option>Front-Driver</option>
+                <option>Front-Pass</option>
+                <option>Rear-Driver</option>
+                <option>Rear-Pass</option>
+                <option>Front-(Drive|Pass)</option>
+                <option>Rear-(Drive|Pass)</option>
+                <option>Engine</option>
+                <option>Transmission</option>
+              </select>
+            </div>
+
+            <!-- Vehicle -->
+            <div class="flex flex-col gap-1.5">
+              <label for="partsVehicle" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-car text-logoClrBlue/70"></i> Vehicle
+              </label>
+              <select name="partsVehicle" id="partsVehicle" required
+                class="vehicle-select w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150">
+                <option value="">-- choose a car --</option>
+              </select>
+              <button type="button" class="open-vehicle-modal text-xs text-logoClrBlue hover:underline transition self-start">
+                + Add / Remove Vehicle
+              </button>
+            </div>
+
+            <!-- Price -->
+            <div class="flex flex-col gap-1.5">
+              <label for="price" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-dollar-sign text-logoClrBlue/70"></i> Price
+              </label>
+              <input type="text" id="price" name="price" placeholder="$ amount" required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150" />
+            </div>
+
+            <!-- Purchased At -->
+            <div class="sm:col-span-2 flex flex-col gap-1.5">
+              <label for="purchased" class="flex items-center gap-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
+                <i class="fa-solid fa-store text-logoClrBlue/70"></i> Purchased At
+              </label>
+              <input type="text" id="purchased" name="purchased" placeholder="Amazon, AutoZone, Advance Auto..." required
+                class="w-full text-base rounded-lg border border-white/10 bg-gray-950/40 text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:border-logoClrBlue focus:ring-2 focus:ring-logoClrBlue/30 transition-colors duration-150" />
+            </div>
           </div>
 
-          <!-- Brand -->
-          <div class="flex flex-col gap-1.5">
-            <label for="brand" class="text-txtWht text-sm font-medium">Brand</label>
-            <input type="text" id="brand" name="brand" placeholder="e.g. Bosch, ACDelco" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-          </div>
-
-          <!-- Parts Location -->
-          <div class="flex flex-col gap-1.5">
-            <label for="partsVehicleSide" class="text-txtWht text-sm font-medium">Install Location</label>
-            <select name="partsVehicleSide" id="partsVehicleSide" required
-              class="w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option value="">-- car location --</option>
-              <option>Front-Driver</option>
-              <option>Front-Pass</option>
-              <option>Rear-Driver</option>
-              <option>Rear-Pass</option>
-              <option>Front-(Drive|Pass)</option>
-              <option>Rear-(Drive|Pass)</option>
-              <option>Engine</option>
-              <option>Transmission</option>
-            </select>
-          </div>
-
-          <!-- Vehicle -->
-          <div class="flex flex-col gap-1.5">
-            <label for="partsVehicle" class="text-txtWht text-sm font-medium">Vehicle</label>
-            <select name="partsVehicle" id="partsVehicle" required
-              class="vehicle-select w-full text-base rounded-lg border border-logoClr bg-gray-900 text-txtWht p-3 focus:outline-none focus:ring-2 focus:ring-logoClr">
-              <option value="">-- choose a car --</option>
-            </select>
-            <button type="button" class="open-vehicle-modal text-xs text-logoClr hover:underline transition self-start">
-              + Add / Remove Vehicle
-            </button>
-          </div>
-
-          <!-- Price -->
-          <div class="flex flex-col gap-1.5">
-            <label for="price" class="text-txtWht text-sm font-medium">Price</label>
-            <input type="text" id="price" name="price" placeholder="$ amount" required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-          </div>
-
-          <!-- Purchased At -->
-          <div class="sm:col-span-2 flex flex-col gap-1.5">
-            <label for="purchased" class="text-txtWht text-sm font-medium">Purchased At</label>
-            <input type="text" id="purchased" name="purchased" placeholder="Amazon, AutoZone, Advance Auto..." required
-              class="w-full text-base rounded-lg border border-logoClr bg-transparent text-txtWht p-3 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-          </div>
-        </div>
-
-        <button type="submit"
-          class="w-full sm:w-2/3 mx-auto bg-black text-logoClr p-3.5 rounded-xl text-base font-semibold hover:bg-gray-900 active:scale-95 transition">
-          Submit
-        </button>
-      </fieldset>
+          <button type="submit"
+            class="w-full sm:w-2/3 mx-auto bg-gradient-to-r from-logoClrBlue to-sky-400 text-gray-900 p-3.5 rounded-xl text-base font-semibold shadow-lg shadow-logoClrBlue/20 hover:shadow-xl hover:shadow-logoClrBlue/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200">
+            Submit
+          </button>
+        </fieldset>
+      </div>
     </form>
   </section>
 
