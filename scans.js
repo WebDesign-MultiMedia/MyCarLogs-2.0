@@ -497,6 +497,44 @@ function reviewHtml() {
     </div>`;
 }
 
+const DG_SEV_DOT = { safety: 'bg-red-400', soon: 'bg-amber-300', monitor: 'bg-sky-300' };
+const DG_SEV_PILL = {
+    safety: 'bg-red-500/15 text-red-300 border-red-400/30',
+    soon: 'bg-amber-400/15 text-amber-300 border-amber-400/30',
+    monitor: 'bg-sky-400/10 text-sky-300 border-sky-400/25'
+};
+
+// One code row; tapping it opens the plain-language guide (dtc-guide.js).
+function dtcRowHtml(x, ctx) {
+    const gd = getDtcGuide(x, ctx);
+    const list = items => `<ul class="flex flex-col gap-1 list-disc pl-4 marker:text-gray-600">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
+    const block = (label, body) => `<div class="flex flex-col gap-1"><p class="${labelCls}">${label}</p><div class="text-gray-300 text-sm">${body}</div></div>`;
+    return `<details class="group rounded-lg bg-gray-950/40 border border-white/5 open:border-white/15">
+      <summary class="flex items-start gap-3 px-3 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+        <span class="mt-1.5 w-2 h-2 rounded-full shrink-0 ${DG_SEV_DOT[gd.sev]}" title="${t('dg_sev_' + gd.sev)}"></span>
+        <span class="font-mono text-sm text-txtWht w-12 shrink-0">${escapeHtml(x.code || '—')}</span>
+        <span class="flex-1 min-w-0 text-gray-300 text-sm">${escapeHtml(x.desc)}</span>
+        ${x.status ? `<span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${statusClass(x.status)}">${escapeHtml(x.status.replace(/\s*DTC$/i, ''))}</span>` : ''}
+        <i class="fa-solid fa-chevron-down text-[10px] text-gray-500 mt-1.5 transition-transform group-open:rotate-180"></i>
+      </summary>
+      <div class="flex flex-col gap-3 px-3 pb-3 pt-1 border-t border-white/5">
+        <div class="flex flex-wrap items-center gap-2 pt-2">
+          <span class="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${DG_SEV_PILL[gd.sev]}">${t('dg_sev_' + gd.sev)}</span>
+          ${gd.codeType ? `<span class="text-gray-500 text-xs">${escapeHtml(gd.codeType)}</span>` : ''}
+        </div>
+        ${block(t('dg_means'), escapeHtml(gd.means))}
+        ${gd.where ? block(t('dg_where'), escapeHtml(gd.where)) : ''}
+        ${gd.parts.length ? block(t('dg_parts'), `<div class="flex flex-wrap gap-1.5">${gd.parts.map((p, i) => `<span class="text-xs px-2 py-1 rounded-md border ${i === 0 && gd.module ? 'border-red-400/30 bg-red-400/10 text-red-200' : 'border-white/10 bg-white/5 text-gray-200'}">${escapeHtml(p)}</span>`).join('')}</div>`) : ''}
+        ${gd.check.length ? block(t('dg_check'), list(gd.check)) : ''}
+        ${gd.fix ? block(t('dg_fix'), escapeHtml(gd.fix)) : ''}
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <a href="${escapeHtml(gd.searchUrl)}" target="_blank" rel="noopener" class="text-red-300 text-xs font-semibold hover:underline"><i class="fa-solid fa-magnifying-glass mr-1"></i>${t('dg_search')}</a>
+          <p class="text-gray-600 text-[11px]">${t('dg_disclaimer')}</p>
+        </div>
+      </div>
+    </details>`;
+}
+
 function scanCardHtml(scan, prev) {
     const id = scan.ID;
     const systems = parseJsonCell(scan.Systems, []);
@@ -523,6 +561,13 @@ function scanCardHtml(scan, prev) {
           ${!added && !cleared && !still ? `<span class="text-gray-300">${t('sc_no_codes')}</span>` : ''}`;
     }
 
+    const ctx = { vehicleLabel: getVehicleLabel(scan.Vehicle), modelYear: vinModelYear(scan.VIN) || (+(String(getVehicleLabel(scan.Vehicle)).match(/\b(?:19|20)\d{2}\b/) || [])[0] || null) };
+    const tips = expanded ? dtcPatternInsights(dtcs, ctx) : [];
+    const tipsHtml = tips.length ? `<div class="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+        <p class="${labelCls}"><i class="fa-solid fa-route mr-1.5"></i>${t('dg_start')}</p>
+        ${tips.map(tp => `<p class="flex gap-2 text-sm text-gray-200"><span class="mt-1.5 w-2 h-2 rounded-full shrink-0 ${DG_SEV_DOT[tp.sev]}"></span><span>${escapeHtml(tp.text)}</span></p>`).join('')}
+      </div>` : '';
+
     // Group codes by system for display.
     const groups = [];
     dtcs.forEach(dtc => {
@@ -534,11 +579,7 @@ function scanCardHtml(scan, prev) {
         const n = splitSystemName(g.name);
         return `<div class="flex flex-col gap-1.5">
           <p class="text-sm"><span class="text-red-200 font-semibold">${escapeHtml(n.abbr || t('sc_other_system'))}</span>${n.full ? `<span class="text-gray-500 text-xs"> · ${escapeHtml(n.full)}</span>` : ''}</p>
-          ${g.items.map(x => `<div class="flex items-start gap-3 rounded-lg bg-gray-950/40 border border-white/5 px-3 py-2">
-            <span class="font-mono text-sm text-txtWht w-14 shrink-0">${escapeHtml(x.code || '—')}</span>
-            <span class="flex-1 min-w-0 text-gray-300 text-sm">${escapeHtml(x.desc)}</span>
-            ${x.status ? `<span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${statusClass(x.status)}">${escapeHtml(x.status.replace(/\s*DTC$/i, ''))}</span>` : ''}
-          </div>`).join('')}
+          ${g.items.map(x => dtcRowHtml(x, ctx)).join('')}
         </div>`;
     }).join('');
 
@@ -561,7 +602,8 @@ function scanCardHtml(scan, prev) {
       <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">${compare}</div>
       ${systems.length ? `<p class="text-gray-400 text-xs">${t('sc_systems_faulty').replace('{f}', faulty.length).replace('{n}', systems.length)}${okCount ? ` · <span class="text-emerald-300">${t('sc_ok_count').replace('{n}', okCount)}</span>` : ''}</p>` : ''}
       ${expanded ? `
-        ${groupHtml ? `<div class="flex flex-col gap-4">${groupHtml}</div>` : ''}
+        ${tipsHtml}
+        ${groupHtml ? `<p class="text-gray-500 text-xs -mb-1"><i class="fa-regular fa-hand-pointer mr-1"></i>${t('dg_tap_hint')}</p><div class="flex flex-col gap-4">${groupHtml}</div>` : ''}
         ${okChips ? `<div class="flex flex-col gap-1.5"><p class="${labelCls}">${t('sc_ok_systems')}</p><div class="flex flex-wrap gap-1.5">${okChips}</div></div>` : ''}
         ${scan.Notes ? `<p class="text-gray-300 text-sm border-l-2 border-white/10 pl-3">${escapeHtml(scan.Notes)}</p>` : ''}
         ${scan.VIN || scan.Report_Number ? `<p class="text-gray-500 text-xs">${scan.VIN ? `VIN ${escapeHtml(scan.VIN)}` : ''}${scan.VIN && scan.Report_Number ? ' · ' : ''}${scan.Report_Number ? `${t('sc_field_report')} ${escapeHtml(scan.Report_Number)}` : ''}</p>` : ''}
