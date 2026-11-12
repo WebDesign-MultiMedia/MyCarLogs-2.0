@@ -65,6 +65,11 @@ Tap the road icon to see each vehicle's service history laid out by odometer rea
 
 **Search & filters:** a search bar pinned to the top of the timeline finds services by part, notes, location or shop name (all words must match; matches are highlighted). Filter by type (Maintenance, Repair, Inspection, Purchase) or use a quick filter: Oil changes, Brakes, Tires & wheels, Transmission, Battery & starting. The miles/days between cards are recalculated between the matching services, so you can see how long each brake job or oil change lasted.
 
+### Scan Reports
+Tap the stethoscope icon to save OBD2 scanner reports. Upload the **PDF report** from the Topdon app (most accurate) or **screenshots** of it (read with on-device text recognition, so double-check the codes). The app extracts the vehicle, date, mileage, VIN, scan type, each system's pass/fault status and every trouble code (code, description, status, system), including Honda-specific codes like `61-20`. You review and edit everything before saving. Each saved scan shows its codes grouped by system and compares them with the vehicle's previous scan (**new**, **cleared**, **still present**). The original file is saved to your Google Drive, and the "View report" link opens it.
+
+The PDF/image is read in your browser; nothing is sent anywhere except your Google Sheet (data) and your Google Drive (file).
+
 ### Vehicle Management
 Vehicles are not hardcoded. You can add any car at any time and remove ones you no longer own. Both the Maintenance and Parts forms stay in sync automatically. Vehicle filter buttons in the Records view also update to match.
 
@@ -133,6 +138,25 @@ Records are stored in one Google Sheet connected to SheetDB (`https://sheetdb.io
   - A value that isn't in the list still displays as-is, and is kept when you edit that row.
 - Column order doesn't matter, but the header names do. Extra columns (e.g. a `LEGEND` column) are ignored.
 - If a tab is renamed in Google Sheets, update `SHEETDB_PARTS_URL` and the `sheetRowUrl(...)` calls in `ManRep.js`.
+
+---
+
+## Scan Reports Setup
+
+**1. Add the `scans` tab to the Google Sheet.** Open the Scans section: until the tab exists it shows a **Copy headers** button. Create a tab named `scans`, click cell A1 and paste. The headers are:
+
+`ID | Date | Vehicle | Mileage | Scan_Type | Report_Number | VIN | Systems_Scanned | Systems_Faulty | DTC_Count | Systems | DTCs | Files | Notes`
+
+(`Systems`, `DTCs` and `Files` hold JSON text written by the app; don't edit those by hand.)
+
+**2. Connect Google Drive (to keep the original PDF/images).** Optional: without it, only the extracted data is saved.
+1. Go to [script.google.com](https://script.google.com) → **New project**, delete the sample code and paste all of [`google-apps-script/drive-upload.gs`](google-apps-script/drive-upload.gs).
+2. Change `UPLOAD_KEY` at the top to your own long secret phrase. Save.
+3. **Deploy → New deployment** → gear icon → **Web app**. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy** and allow the permissions (Google will warn that the app is unverified, because it's your own script: **Advanced → Go to project**).
+4. Copy the **Web app URL** (ends in `/exec`). Opening it in a browser should show `{"ok":true,...}`.
+5. In MyCarLogs → **Scans** → **Google Drive · Connect**, paste the URL and your upload key, then **Save**. Do this once on each device you upload from (it's stored only in that browser).
+
+Files go to a Drive folder named **MyCarLogs Scan Reports** and stay **private**: only your Google account can open them. The upload key stops strangers from adding files to your Drive. If you edit the script later, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
 
 ---
 
