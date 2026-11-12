@@ -83,6 +83,24 @@ function isOilChange(r) {
     return /\boil\b[^|;]{0,25}\bfilter\b/i.test(`${r.Parts || ''} ${r.Notes_Issues || ''}`);
 }
 
+// Splits "Tires | TPMS sensor | Rear Brake Pads" into separate items (display only — the sheet is untouched).
+// Splits on | ; , outside brackets; never on "&" ("Engine Oil & Filter" is one job).
+// A trailing "(…)" becomes gray detail text: "Cv Axle (Trakmotive; FR H08210)" → Cv Axle + detail.
+function splitWorkItems(text) {
+    const pieces = [];
+    let depth = 0, cur = '';
+    for (const ch of String(text || '')) {
+        if (ch === '(') depth++;
+        if (ch === ')') depth = Math.max(0, depth - 1);
+        if (depth === 0 && /[|;,]/.test(ch)) { pieces.push(cur); cur = ''; } else cur += ch;
+    }
+    pieces.push(cur);
+    return pieces.map(s => s.trim()).filter(Boolean).map(s => {
+        const m = s.match(/^(.*\S)\s*\(([^()]*)\)\s*$/);
+        return m ? { name: m[1].trim(), detail: m[2].trim().replace(/\s*;\s*/g, ' · ') } : { name: s, detail: '' };
+    });
+}
+
 function oilGapHtml(stop) {
     if (!stop.isOil) return '';
     const text = stop.oilGap
@@ -106,12 +124,18 @@ function timelineVehicleChips(vehicles) {
 function stopCardHtml(stop) {
     const key = `${timelineVehicle}:${stop.miles}`;
     const expanded = expandedTimelineCards.has(key);
-    const items = stop.records.map(r => {
-        const loc = r.VehicleSide ? `<span class="text-gray-500"> · ${escapeHtml(locationLabel(r.VehicleSide))}</span>` : '';
-        const note = expanded && r.Notes_Issues
-            ? `<p class="text-gray-400 text-xs mt-1 pl-1 border-l-2 border-white/10 ml-0.5">${escapeHtml(r.Notes_Issues)}</p>` : '';
-        return `<li class="flex gap-2"><span class="text-logoClr mt-[0.45rem] w-1.5 h-1.5 rounded-full bg-logoClr shrink-0"></span>
-          <div class="min-w-0">${escapeHtml(r.Parts || typeLabel(r.MainenanceRepairs) || '-')}${loc}${note}</div></li>`;
+    const items = stop.records.flatMap(r => {
+        const parts = splitWorkItems(r.Parts);
+        if (!parts.length) parts.push({ name: typeLabel(r.MainenanceRepairs) || '-', detail: '' });
+        return parts.map((p, i) => {
+            // Location on the record's first item, notes after its last, so they aren't repeated.
+            const loc = i === 0 && r.VehicleSide ? `<span class="text-gray-500"> · ${escapeHtml(locationLabel(r.VehicleSide))}</span>` : '';
+            const detail = p.detail ? `<span class="block text-gray-500 text-xs">${escapeHtml(p.detail)}</span>` : '';
+            const note = expanded && i === parts.length - 1 && r.Notes_Issues
+                ? `<p class="text-gray-400 text-xs mt-1 pl-1 border-l-2 border-white/10 ml-0.5">${escapeHtml(r.Notes_Issues)}</p>` : '';
+            return `<li class="flex gap-2"><span class="text-logoClr mt-[0.45rem] w-1.5 h-1.5 rounded-full bg-logoClr shrink-0"></span>
+              <div class="min-w-0">${escapeHtml(p.name)}${loc}${detail}${note}</div></li>`;
+        });
     });
     const shown = expanded ? items : items.slice(0, TIMELINE_PREVIEW_ITEMS);
     const hidden = items.length - shown.length;
