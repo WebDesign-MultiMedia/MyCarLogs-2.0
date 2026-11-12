@@ -118,8 +118,12 @@ Records are stored in one Google Sheet connected to SheetDB (`https://sheetdb.io
 
 - **`ID` column is required** in both tabs. Edit and delete target a single row by its ID, because SheetDB updates every row that matches a value. Every row needs its own number (1, 2, 3, …). New records get the next ID after the current highest one.
 - **Store dropdown values in English.** The UI translates them for display (`i18n.js`), but the sheet must hold the stable English values:
-  - Type: `Maintenance`, `Repair`
-  - Location: `Front-Driver`, `Front-Pass`, `Rear-Driver`, `Rear-Pass`, `Front-(Drive|Pass)`, `Rear-(Drive|Pass)`, `Engine`, `Transmission`
+  - Type: `Maintenance`, `Repair`, `Inspection`, `Purchase`
+  - Location (Wheels & Corners): `Front-Driver`, `Front-Pass`, `Rear-Driver`, `Rear-Pass`, `Front-(Drive|Pass)`, `Rear-(Drive|Pass)`, `Front & Rear`, `All Corners`
+  - Location (Powertrain): `Engine`, `Transmission`, `Engine & Transmission`, `Exhaust`
+  - Location (Body & Systems): `Interior`, `Exterior`, `Electrical`, `Entire Vehicle`
+  - The app shows friendlier labels (e.g. `Front-(Drive|Pass)` displays as "Front – Both Sides"). To add an option, add it to `LOCATION_GROUPS` / `TYPE_OPTIONS` in `ManRep.js` and its label to both languages in `i18n.js`. Never rename an existing value, because rows in the sheet depend on it.
+  - A value that isn't in the list still displays as-is, and is kept when you edit that row.
 - Column order doesn't matter, but the header names do. Extra columns (e.g. a `LEGEND` column) are ignored.
 - If a tab is renamed in Google Sheets, update `SHEETDB_PARTS_URL` and the `sheetRowUrl(...)` calls in `ManRep.js`.
 

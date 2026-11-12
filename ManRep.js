@@ -210,7 +210,7 @@ document.querySelector('#logForm form').addEventListener('submit', async (e) => 
             ID: await nextSequentialId(SHEETDB_URL),
             Date: document.getElementById('date').value,
             Mileage: document.getElementById('mileage').value,
-            MainenanceRepairs: document.getElementById('type').value,
+            MainenanceRepairs: (document.querySelector('#typeGroup input:checked') || {}).value || '',
             VehicleSide: document.getElementById('VehicleSide').value,
             Vehicle: document.getElementById('vehicle').value,
             Parts: document.getElementById('partCount').value,
@@ -391,27 +391,80 @@ function getVehicleLabel(value) {
 
 // ---- Inline edit / delete ----
 // value = what's stored in the sheet (English, stable); key = translation key for display text.
-const LOCATION_OPTIONS = [
-    { value: 'Front-Driver', key: 'opt_front_driver' },
-    { value: 'Front-Pass', key: 'opt_front_pass' },
-    { value: 'Rear-Driver', key: 'opt_rear_driver' },
-    { value: 'Rear-Pass', key: 'opt_rear_pass' },
-    { value: 'Front-(Drive|Pass)', key: 'opt_front_both' },
-    { value: 'Rear-(Drive|Pass)', key: 'opt_rear_both' },
-    { value: 'Engine', key: 'opt_engine' },
-    { value: 'Transmission', key: 'opt_transmission' }
+// Never rename an existing `value` — rows already in the sheet depend on it.
+const LOCATION_GROUPS = [
+    { key: 'grp_corners', options: [
+        { value: 'Front-Driver', key: 'opt_front_driver' },
+        { value: 'Front-Pass', key: 'opt_front_pass' },
+        { value: 'Rear-Driver', key: 'opt_rear_driver' },
+        { value: 'Rear-Pass', key: 'opt_rear_pass' },
+        { value: 'Front-(Drive|Pass)', key: 'opt_front_both' },
+        { value: 'Rear-(Drive|Pass)', key: 'opt_rear_both' },
+        { value: 'Front & Rear', key: 'opt_front_rear' },
+        { value: 'All Corners', key: 'opt_all_corners' }
+    ]},
+    { key: 'grp_powertrain', options: [
+        { value: 'Engine', key: 'opt_engine' },
+        { value: 'Transmission', key: 'opt_transmission' },
+        { value: 'Engine & Transmission', key: 'opt_engine_trans' },
+        { value: 'Exhaust', key: 'opt_exhaust' }
+    ]},
+    { key: 'grp_body', options: [
+        { value: 'Interior', key: 'opt_interior' },
+        { value: 'Exterior', key: 'opt_exterior' },
+        { value: 'Electrical', key: 'opt_electrical' },
+        { value: 'Entire Vehicle', key: 'opt_entire_vehicle' }
+    ]}
 ];
+const LOCATION_OPTIONS = LOCATION_GROUPS.flatMap(g => g.options);
 const TYPE_OPTIONS = [
-    { value: 'Maintenance', key: 'opt_maintenance' },
-    { value: 'Repair', key: 'opt_repair' }
+    { value: 'Maintenance', key: 'opt_maintenance', icon: 'fa-oil-can' },
+    { value: 'Repair', key: 'opt_repair', icon: 'fa-screwdriver-wrench' },
+    { value: 'Inspection', key: 'opt_inspection', icon: 'fa-clipboard-check' },
+    { value: 'Purchase', key: 'opt_purchase', icon: 'fa-key' }
 ];
+
+// Builds <option>/<optgroup> HTML. If `current` is a value not in the list
+// (older/hand-typed sheet data), it's kept as an extra option so editing never wipes it.
+function optionsHtml(field, current) {
+    const sel = v => (v === current ? ' selected' : '');
+    const opt = o => `<option value="${escapeHtml(o.value)}"${sel(o.value)}>${t(o.key)}</option>`;
+    const known = field.options.some(o => o.value === current);
+    const extra = current && !known ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : '';
+    const body = field.groups
+        ? field.groups.map(g => `<optgroup label="${t(g.key)}">${g.options.map(opt).join('')}</optgroup>`).join('')
+        : field.options.map(opt).join('');
+    return extra + body;
+}
+
+// Renders the form's Type pills and Location dropdowns (re-run on language change).
+function renderFormOptions() {
+    const typeGroup = document.getElementById('typeGroup');
+    if (typeGroup) {
+        const checked = typeGroup.querySelector('input:checked');
+        const current = checked ? checked.value : '';
+        typeGroup.innerHTML = TYPE_OPTIONS.map((o, i) => `
+          <label class="type-pill flex-1 min-w-[calc(50%-0.25rem)] sm:min-w-0 cursor-pointer">
+            <input type="radio" name="type" value="${o.value}" class="peer sr-only"${o.value === current ? ' checked' : ''}${i === 0 ? ' required' : ''}>
+            <span class="flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 border border-transparent transition-all duration-150 hover:text-txtWht hover:bg-white/5 peer-checked:bg-logoClr/15 peer-checked:border-logoClr/60 peer-checked:text-logoClr peer-focus-visible:ring-2 peer-focus-visible:ring-logoClr/40">
+              <i class="fa-solid ${o.icon} text-xs"></i>${t(o.key)}
+            </span>
+          </label>`).join('');
+    }
+    document.querySelectorAll('select.location-select').forEach(selectEl => {
+        const current = selectEl.value;
+        selectEl.innerHTML = `<option value="">${t('opt_choose_location')}</option>` +
+            optionsHtml({ options: LOCATION_OPTIONS, groups: LOCATION_GROUPS }, current);
+    });
+}
+renderFormOptions();
 
 const MAINTENANCE_FIELDS = [
     { key: 'Date', labelKey: 'col_date', type: 'date', nowrap: true },
     { key: 'Vehicle', labelKey: 'col_vehicle', type: 'vehicle', truncate: true },
     { key: 'MainenanceRepairs', labelKey: 'col_type', type: 'select', options: TYPE_OPTIONS },
     { key: 'Mileage', labelKey: 'col_mileage', type: 'number' },
-    { key: 'VehicleSide', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
+    { key: 'VehicleSide', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, groups: LOCATION_GROUPS, truncate: true },
     { key: 'Notes_Issues', labelKey: 'col_notes', type: 'text' },
     { key: 'Cost', labelKey: 'col_cost', type: 'money', nowrap: true },
     { key: 'Parts', labelKey: 'col_parts', type: 'text', truncate: true }
@@ -422,7 +475,7 @@ const PARTS_FIELDS = [
     { key: 'Vehicle', labelKey: 'col_vehicle', type: 'vehicle', truncate: true },
     { key: 'Parts_Name', labelKey: 'col_part', type: 'text', truncate: true },
     { key: 'Parts_Brand', labelKey: 'col_brand', type: 'text', truncate: true },
-    { key: 'Parts_Location', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
+    { key: 'Parts_Location', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, groups: LOCATION_GROUPS, truncate: true },
     { key: 'Price', labelKey: 'col_price', type: 'money', nowrap: true },
     { key: 'Purchased', labelKey: 'col_bought_at', type: 'text', truncate: true }
 ];
@@ -434,6 +487,10 @@ function displayValue(field, record) {
     const raw = record[field.key];
     if (field.type === 'vehicle') return getVehicleLabel(raw);
     if (field.type === 'money') return raw ? '$' + raw : '-';
+    if (field.type === 'select') {
+        const known = field.options.find(o => o.value === raw);
+        return known ? t(known.key) : (raw || '-');
+    }
     return raw || '-';
 }
 
@@ -458,8 +515,7 @@ function fieldInputHtml(field, record) {
         return `<select ${common}><option value="">${t('opt_choose_car')}</option>${opts}</select>`;
     }
     if (field.type === 'select') {
-        const opts = field.options.map(o => `<option value="${o.value}"${o.value === raw ? ' selected' : ''}>${t(o.key)}</option>`).join('');
-        return `<select ${common}>${opts}</select>`;
+        return `<select ${common}>${optionsHtml(field, raw)}</select>`;
     }
     if (field.type === 'date') {
         return `<input type="date" ${common} value="${toDateInputValue(raw)}">`;
