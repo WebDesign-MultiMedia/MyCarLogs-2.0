@@ -50,9 +50,37 @@ function showSection(name) {
     navSpreadsheet.style.opacity = name === 'records' ? '1' : '0.4';
     navTimeline.style.opacity = name === 'timeline' ? '1' : '0.4';
     navScans.style.opacity = name === 'scans' ? '1' : '0.4';
+    // Remember the section in the URL (#timeline, #scans, …) so a refresh comes back here.
+    try { history.replaceState(null, '', name === 'log' ? location.pathname + location.search : '#' + name); } catch { }
 }
 
+const initialSection = location.hash.slice(1); // read before showSection('log') rewrites the URL
 showSection('log');
+
+// ---- Stay in place on refresh ----
+// After all scripts load, reopen the section from the URL by "clicking" its nav icon (so it
+// loads its data the normal way), then put the scroll back once the content is tall enough.
+const SECTION_NAV = { parts: 'navGears', records: 'navSpreadsheet', timeline: 'navTimeline', scans: 'navScans' };
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('pagehide', () => {
+    try { sessionStorage.setItem('scrollPos', JSON.stringify({ hash: location.hash, y: window.scrollY })); } catch { }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const name = initialSection;
+    if (SECTION_NAV[name]) document.getElementById(SECTION_NAV[name]).click();
+    let saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem('scrollPos')); sessionStorage.removeItem('scrollPos'); } catch { }
+    if (!saved || saved.hash !== location.hash || !(saved.y > 0)) return;
+    const started = Date.now();
+    let userMoved = false;
+    ['wheel', 'touchstart', 'keydown'].forEach(ev => window.addEventListener(ev, () => { userMoved = true; }, { once: true, passive: true }));
+    (function restore() {
+        if (userMoved) return; // don't yank the page if they already started scrolling
+        const fits = document.documentElement.scrollHeight - window.innerHeight >= saved.y;
+        if (fits || Date.now() - started > 6000) { window.scrollTo(0, saved.y); return; }
+        setTimeout(restore, 100); // data is still loading from the sheet
+    })();
+});
 
 // ---- Filter state (declared early — used by renderVehicleFilters on load) ----
 let allMaintenanceRecords = [];
