@@ -6,6 +6,11 @@ const serviceToggleBtn = document.getElementById('serviceToggleBtn');
 const serviceToggleLabel = document.getElementById('serviceToggleLabel');
 const serviceFields = serviceForm.querySelectorAll('input, select, textarea');
 
+function updateServiceToggleLabel() {
+    const isHidden = serviceForm.style.display === 'none';
+    serviceToggleLabel.textContent = isHidden ? t('add_service_info') : t('hide_service_info');
+}
+
 function toggleServiceSection() {
     const isHidden = serviceForm.style.display === 'none';
     serviceForm.style.display = isHidden ? 'grid' : 'none';
@@ -13,7 +18,7 @@ function toggleServiceSection() {
     serviceToggleBtn.classList.toggle('text-red-400', isHidden);
     serviceToggleBtn.classList.toggle('border-logoClr/50', !isHidden);
     serviceToggleBtn.classList.toggle('text-logoClr', !isHidden);
-    serviceToggleLabel.textContent = isHidden ? '- Hide Service Info' : '+ Add Service Info';
+    updateServiceToggleLabel();
 
     // Only require these fields while the section is visible — a hidden
     // required field still blocks form submission in most browsers.
@@ -88,7 +93,7 @@ function populateVehicleSelects() {
     const vehicles = getVehicles();
     document.querySelectorAll('.vehicle-select').forEach(sel => {
         const currentVal = sel.value;
-        sel.innerHTML = '<option value="">-- choose a car --</option>';
+        sel.innerHTML = `<option value="" data-i18n="opt_choose_car">${t('opt_choose_car')}</option>`;
         vehicles.forEach(v => {
             const opt = document.createElement('option');
             opt.value = v.value;
@@ -106,14 +111,14 @@ function renderVehicleManagerList() {
     if (!list) return;
 
     if (vehicles.length === 0) {
-        list.innerHTML = '<li class="text-gray-400 text-sm text-center py-2">No vehicles added yet.</li>';
+        list.innerHTML = `<li class="text-gray-400 text-sm text-center py-2">${t('no_vehicles')}</li>`;
         return;
     }
 
     list.innerHTML = vehicles.map((v, i) => `
     <li class="flex justify-between items-center bg-gray-700/50 rounded-lg px-3 py-2">
       <span class="text-txtWht text-sm">${v.label}</span>
-      <button type="button" class="delete-vehicle text-red-400 hover:text-red-300 text-xl leading-none ml-2" data-index="${i}" title="Remove">&times;</button>
+      <button type="button" class="delete-vehicle text-red-400 hover:text-red-300 text-xl leading-none ml-2" data-index="${i}" title="${t('remove_title')}">&times;</button>
     </li>`).join('');
 
     list.querySelectorAll('.delete-vehicle').forEach(btn => {
@@ -198,7 +203,7 @@ document.querySelector('#logForm form').addEventListener('submit', async (e) => 
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
+    submitBtn.textContent = t('saving');
 
     try {
         const record = {
@@ -228,13 +233,13 @@ document.querySelector('#logForm form').addEventListener('submit', async (e) => 
 
         e.target.reset();
         if (serviceForm.style.display !== 'none') toggleServiceSection();
-        showFeedback('logForm', 'Maintenance record saved!');
+        showFeedback('logForm', t('msg_maintenance_saved'));
     } catch (err) {
-        showFeedback('logForm', 'Error saving record — check your connection and try again.');
+        showFeedback('logForm', t('msg_save_error'));
         console.error('SheetDB error:', err);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
+        submitBtn.textContent = t('submit');
     }
 });
 
@@ -278,7 +283,7 @@ function renderVehicleFilters() {
     if (!row) return;
 
     const allActive = activeVehicleFilter === 'all';
-    let html = `<button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border transition hover:border-logoClr hover:text-logoClr ${allActive ? 'border-logoClr text-logoClr' : 'border-gray-600 text-gray-400'}" data-vehicle="all">All</button>`;
+    let html = `<button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border transition hover:border-logoClr hover:text-logoClr ${allActive ? 'border-logoClr text-logoClr' : 'border-gray-600 text-gray-400'}" data-vehicle="all">${t('filter_all')}</button>`;
 
     vehicles.forEach(v => {
         const active = activeVehicleFilter === v.value;
@@ -356,7 +361,7 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
 // ---- Fetch from SheetDB then render ----
 async function fetchRecords() {
     const container = document.getElementById('recordsContent');
-    container.innerHTML = '<p class="text-gray-400 text-center py-8 animate-pulse">Loading records...</p>';
+    container.innerHTML = `<p class="text-gray-400 text-center py-8 animate-pulse">${t('loading_records')}</p>`;
     renderVehicleFilters();
 
     try {
@@ -366,7 +371,7 @@ async function fetchRecords() {
         allMaintenanceRecords = await mRes.json();
         allPartsRecords = await pRes.json();
     } catch (err) {
-        container.innerHTML = '<p class="text-red-400 text-center py-8">Could not load records — check your connection.</p>';
+        container.innerHTML = `<p class="text-red-400 text-center py-8">${t('could_not_load')}</p>`;
         console.error('SheetDB fetch error:', err);
         return;
     }
@@ -385,28 +390,41 @@ function getVehicleLabel(value) {
 }
 
 // ---- Inline edit / delete ----
-const LOCATION_OPTIONS = ['Front-Driver', 'Front-Pass', 'Rear-Driver', 'Rear-Pass', 'Front-(Drive|Pass)', 'Rear-(Drive|Pass)', 'Engine', 'Transmission'];
-const TYPE_OPTIONS = ['Maintenance', 'Repair'];
+// value = what's stored in the sheet (English, stable); key = translation key for display text.
+const LOCATION_OPTIONS = [
+    { value: 'Front-Driver', key: 'opt_front_driver' },
+    { value: 'Front-Pass', key: 'opt_front_pass' },
+    { value: 'Rear-Driver', key: 'opt_rear_driver' },
+    { value: 'Rear-Pass', key: 'opt_rear_pass' },
+    { value: 'Front-(Drive|Pass)', key: 'opt_front_both' },
+    { value: 'Rear-(Drive|Pass)', key: 'opt_rear_both' },
+    { value: 'Engine', key: 'opt_engine' },
+    { value: 'Transmission', key: 'opt_transmission' }
+];
+const TYPE_OPTIONS = [
+    { value: 'Maintenance', key: 'opt_maintenance' },
+    { value: 'Repair', key: 'opt_repair' }
+];
 
 const MAINTENANCE_FIELDS = [
-    { key: 'Date', label: 'Date', type: 'date', nowrap: true },
-    { key: 'Vehicle', label: 'Vehicle', type: 'vehicle', truncate: true },
-    { key: 'MainenanceRepairs', label: 'Type', type: 'select', options: TYPE_OPTIONS },
-    { key: 'Mileage', label: 'Mileage', type: 'number' },
-    { key: 'VehicleSide', label: 'Location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
-    { key: 'Notes_Issues', label: 'Notes', type: 'text' },
-    { key: 'Cost', label: 'Cost', type: 'money', nowrap: true },
-    { key: 'Parts', label: 'Parts', type: 'text', truncate: true }
+    { key: 'Date', labelKey: 'col_date', type: 'date', nowrap: true },
+    { key: 'Vehicle', labelKey: 'col_vehicle', type: 'vehicle', truncate: true },
+    { key: 'MainenanceRepairs', labelKey: 'col_type', type: 'select', options: TYPE_OPTIONS },
+    { key: 'Mileage', labelKey: 'col_mileage', type: 'number' },
+    { key: 'VehicleSide', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
+    { key: 'Notes_Issues', labelKey: 'col_notes', type: 'text' },
+    { key: 'Cost', labelKey: 'col_cost', type: 'money', nowrap: true },
+    { key: 'Parts', labelKey: 'col_parts', type: 'text', truncate: true }
 ];
 
 const PARTS_FIELDS = [
-    { key: 'Date_Purchased', label: 'Date', type: 'date', nowrap: true },
-    { key: 'Vehicle', label: 'Vehicle', type: 'vehicle', truncate: true },
-    { key: 'Parts_Name', label: 'Part', type: 'text', truncate: true },
-    { key: 'Parts_Brand', label: 'Brand', type: 'text', truncate: true },
-    { key: 'Parts_Location', label: 'Location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
-    { key: 'Price', label: 'Price', type: 'money', nowrap: true },
-    { key: 'Purchased', label: 'Bought At', type: 'text', truncate: true }
+    { key: 'Date_Purchased', labelKey: 'col_date', type: 'date', nowrap: true },
+    { key: 'Vehicle', labelKey: 'col_vehicle', type: 'vehicle', truncate: true },
+    { key: 'Parts_Name', labelKey: 'col_part', type: 'text', truncate: true },
+    { key: 'Parts_Brand', labelKey: 'col_brand', type: 'text', truncate: true },
+    { key: 'Parts_Location', labelKey: 'col_location', type: 'select', options: LOCATION_OPTIONS, truncate: true },
+    { key: 'Price', labelKey: 'col_price', type: 'money', nowrap: true },
+    { key: 'Purchased', labelKey: 'col_bought_at', type: 'text', truncate: true }
 ];
 
 // Only one row can be edited at a time, app-wide.
@@ -437,10 +455,10 @@ function fieldInputHtml(field, record) {
 
     if (field.type === 'vehicle') {
         const opts = getVehicles().map(v => `<option value="${v.value}"${v.value === raw ? ' selected' : ''}>${v.label}</option>`).join('');
-        return `<select ${common}><option value="">-- choose --</option>${opts}</select>`;
+        return `<select ${common}><option value="">${t('opt_choose_car')}</option>${opts}</select>`;
     }
     if (field.type === 'select') {
-        const opts = field.options.map(o => `<option value="${o}"${o === raw ? ' selected' : ''}>${o}</option>`).join('');
+        const opts = field.options.map(o => `<option value="${o.value}"${o.value === raw ? ' selected' : ''}>${t(o.key)}</option>`).join('');
         return `<select ${common}>${opts}</select>`;
     }
     if (field.type === 'date') {
@@ -453,17 +471,17 @@ function fieldInputHtml(field, record) {
 }
 
 function actionsCellView(type, id) {
-    if (!id) return `<td class="p-2 whitespace-nowrap text-gray-500 text-xs" title="Add an ID column value in the sheet to enable editing">No ID</td>`;
+    if (!id) return `<td class="p-2 whitespace-nowrap text-gray-500 text-xs" title="${t('no_id_title')}">${t('no_id')}</td>`;
     return `<td class="p-2 whitespace-nowrap">
-      <button type="button" class="text-logoClr hover:underline text-xs mr-2" data-action="edit" data-type="${type}" data-id="${escapeHtml(id)}">Edit</button>
-      <button type="button" class="text-red-400 hover:underline text-xs" data-action="delete" data-type="${type}" data-id="${escapeHtml(id)}">Delete</button>
+      <button type="button" class="text-logoClr hover:underline text-xs mr-2" data-action="edit" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_edit')}</button>
+      <button type="button" class="text-red-400 hover:underline text-xs" data-action="delete" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_delete')}</button>
     </td>`;
 }
 
 function actionsCellEdit(type, id) {
     return `<td class="p-2 whitespace-nowrap">
-      <button type="button" class="text-green-400 hover:underline text-xs mr-2" data-action="save" data-type="${type}" data-id="${escapeHtml(id)}">Save</button>
-      <button type="button" class="text-gray-400 hover:underline text-xs" data-action="cancel" data-type="${type}" data-id="${escapeHtml(id)}">Cancel</button>
+      <button type="button" class="text-green-400 hover:underline text-xs mr-2" data-action="save" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_save')}</button>
+      <button type="button" class="text-gray-400 hover:underline text-xs" data-action="cancel" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_cancel')}</button>
     </td>`;
 }
 
@@ -489,23 +507,23 @@ function cardHtml(record, fields, type, borderColor, accentText, extraViewHtml) 
     if (isEditing) {
         const inputsHtml = fields.map(f => `
           <div>
-            <p class="text-gray-400 text-xs uppercase tracking-wide">${f.label}</p>
+            <p class="text-gray-400 text-xs uppercase tracking-wide">${t(f.labelKey)}</p>
             ${fieldInputHtml(f, record)}
           </div>`).join('');
         return `
         <div class="border ${borderColor} rounded-lg p-4 bg-gray-900/50" data-row-id="${escapeHtml(id)}">
           <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">${inputsHtml}</div>
           <div class="flex justify-end gap-4 border-t border-gray-600 pt-2">
-            <button type="button" class="text-green-400 hover:underline text-sm" data-action="save" data-type="${type}" data-id="${escapeHtml(id)}">Save</button>
-            <button type="button" class="text-gray-400 hover:underline text-sm" data-action="cancel" data-type="${type}" data-id="${escapeHtml(id)}">Cancel</button>
+            <button type="button" class="text-green-400 hover:underline text-sm" data-action="save" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_save')}</button>
+            <button type="button" class="text-gray-400 hover:underline text-sm" data-action="cancel" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_cancel')}</button>
           </div>
         </div>`;
     }
 
     const actionsHtml = id
-        ? `<button type="button" class="${accentText} hover:underline text-xs" data-action="edit" data-type="${type}" data-id="${escapeHtml(id)}">Edit</button>
-           <button type="button" class="text-red-400 hover:underline text-xs" data-action="delete" data-type="${type}" data-id="${escapeHtml(id)}">Delete</button>`
-        : `<span class="text-gray-500 text-xs" title="Add an ID column value in the sheet to enable editing">No ID</span>`;
+        ? `<button type="button" class="${accentText} hover:underline text-xs" data-action="edit" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_edit')}</button>
+           <button type="button" class="text-red-400 hover:underline text-xs" data-action="delete" data-type="${type}" data-id="${escapeHtml(id)}">${t('action_delete')}</button>`
+        : `<span class="text-gray-500 text-xs" title="${t('no_id_title')}">${t('no_id')}</span>`;
 
     return `
     <div class="border ${borderColor} rounded-lg p-4 bg-gray-900/50" data-row-id="${escapeHtml(id || '')}">
@@ -516,7 +534,7 @@ function cardHtml(record, fields, type, borderColor, accentText, extraViewHtml) 
       <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         ${fields.slice(2).map(f => `
         <div${f.key === 'Purchased' ? ' class="col-span-2"' : ''}>
-          <p class="text-gray-400 text-xs uppercase tracking-wide">${f.label}</p>
+          <p class="text-gray-400 text-xs uppercase tracking-wide">${t(f.labelKey)}</p>
           <p class="text-txtWht">${displayValue(f, record)}</p>
         </div>`).join('')}
         ${extraViewHtml ? extraViewHtml(record) : ''}
@@ -568,7 +586,7 @@ async function deleteRecord(type, id, btn) {
         applyFiltersAndRender();
     } catch (err) {
         console.error('Delete error:', err);
-        alert('Could not delete record — check your connection and try again.');
+        alert(t('msg_delete_error'));
         btn.disabled = false;
     }
 }
@@ -600,7 +618,7 @@ async function saveRecord(type, id, btn) {
         applyFiltersAndRender();
     } catch (err) {
         console.error('Update error:', err);
-        alert('Could not save changes — check your connection and try again.');
+        alert(t('msg_update_error'));
         btn.disabled = false;
     }
 }
@@ -660,7 +678,7 @@ function applyFiltersAndRender() {
     if (activeTypeFilter === 'parts') maintenance = [];
 
     if (maintenance.length === 0 && parts.length === 0) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-8">No records match the selected filters.</p>';
+        container.innerHTML = `<p class="text-gray-400 text-center py-8">${t('no_records_match')}</p>`;
         return;
     }
 
@@ -671,12 +689,12 @@ function applyFiltersAndRender() {
         const mExtras = r => `
             ${r.Notes_Issues ? `
             <div class="col-span-2">
-              <p class="text-gray-400 text-xs uppercase tracking-wide">Notes</p>
+              <p class="text-gray-400 text-xs uppercase tracking-wide">${t('card_notes')}</p>
               <p class="text-txtWht">${r.Notes_Issues}</p>
             </div>` : ''}
             ${r.Service_Provider ? `
             <div class="col-span-2 border-t border-gray-600 pt-2 mt-1">
-              <p class="text-gray-400 text-xs uppercase tracking-wide">Service</p>
+              <p class="text-gray-400 text-xs uppercase tracking-wide">${t('card_service')}</p>
               <p class="text-txtWht">${r.Service_Provider}${r.SPLocation ? ' — ' + r.SPLocation : ''}</p>
             </div>` : ''}`;
 
@@ -697,15 +715,15 @@ function applyFiltersAndRender() {
           </colgroup>
           <thead>
             <tr class="border-b border-logoClr text-logoClr">
-              <th class="text-left p-2 whitespace-nowrap">Date</th>
-              <th class="text-left p-2 whitespace-nowrap">Vehicle</th>
-              <th class="text-left p-2">Type</th>
-              <th class="text-left p-2 whitespace-nowrap">Mileage</th>
-              <th class="text-left p-2">Location</th>
-              <th class="text-left p-2">Notes</th>
-              <th class="text-left p-2 whitespace-nowrap">Cost</th>
-              <th class="text-left p-2 whitespace-nowrap">Parts</th>
-              <th class="text-left p-2 whitespace-nowrap">Actions</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_date')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_vehicle')}</th>
+              <th class="text-left p-2">${t('col_type')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_mileage')}</th>
+              <th class="text-left p-2">${t('col_location')}</th>
+              <th class="text-left p-2">${t('col_notes')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_cost')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_parts')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -714,7 +732,7 @@ function applyFiltersAndRender() {
         </table>`;
 
         html += `
-        <h3 class="text-logoClr text-lg sm:text-xl mb-3">Maintenance / Repair</h3>
+        <h3 class="text-logoClr text-lg sm:text-xl mb-3">${t('section_maintenance')}</h3>
         <div class="sm:hidden space-y-3 mb-8">${mCards}</div>
         <div class="hidden sm:block mb-8">${mTable}</div>`;
     }
@@ -737,14 +755,14 @@ function applyFiltersAndRender() {
           </colgroup>
           <thead>
             <tr class="border-b border-logoClrBlue text-logoClrBlue">
-              <th class="text-left p-2 whitespace-nowrap">Date</th>
-              <th class="text-left p-2 whitespace-nowrap">Vehicle</th>
-              <th class="text-left p-2">Part</th>
-              <th class="text-left p-2">Brand</th>
-              <th class="text-left p-2">Location</th>
-              <th class="text-left p-2 whitespace-nowrap">Price</th>
-              <th class="text-left p-2">Bought At</th>
-              <th class="text-left p-2 whitespace-nowrap">Actions</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_date')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_vehicle')}</th>
+              <th class="text-left p-2">${t('col_part')}</th>
+              <th class="text-left p-2">${t('col_brand')}</th>
+              <th class="text-left p-2">${t('col_location')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_price')}</th>
+              <th class="text-left p-2">${t('col_bought_at')}</th>
+              <th class="text-left p-2 whitespace-nowrap">${t('col_actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -753,7 +771,7 @@ function applyFiltersAndRender() {
         </table>`;
 
         html += `
-        <h3 class="text-logoClrBlue text-lg sm:text-xl mb-3">Parts</h3>
+        <h3 class="text-logoClrBlue text-lg sm:text-xl mb-3">${t('section_parts')}</h3>
         <div class="sm:hidden space-y-3 mb-8">${pCards}</div>
         <div class="hidden sm:block mb-8">${pTable}</div>`;
     }

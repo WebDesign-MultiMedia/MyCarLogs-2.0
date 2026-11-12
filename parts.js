@@ -3,7 +3,7 @@ document.querySelector('#partsFormtwo form').addEventListener('submit', async (e
     const submitBtn = e.target.querySelector('button[type="submit"]');
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
+    submitBtn.textContent = t('saving');
 
     try {
         const record = {
@@ -29,12 +29,12 @@ document.querySelector('#partsFormtwo form').addEventListener('submit', async (e
         localStorage.setItem('partsRecords', JSON.stringify(saved));
 
         e.target.reset();
-        showFeedback('partsFormtwo', 'Parts record saved!');
+        showFeedback('partsFormtwo', t('msg_parts_saved'));
     } catch (err) {
-        showFeedback('partsFormtwo', 'Error saving record — check your connection and try again.');
+        showFeedback('partsFormtwo', t('msg_save_error'));
         console.error('SheetDB error:', err);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
+        submitBtn.textContent = t('submit');
     }
 });
