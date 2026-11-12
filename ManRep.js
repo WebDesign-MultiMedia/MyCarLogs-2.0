@@ -175,7 +175,7 @@ populateVehicleSelects();
 
 // ---- Maintenance/Repair form submit ----
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/f85paemez3pqc';
-const SHEETDB_PARTS_URL = `${SHEETDB_URL}?sheet=Sheet2`;
+const SHEETDB_PARTS_URL = `${SHEETDB_URL}?sheet=parts`;
 
 // Unique per-record ID so a single row can be targeted precisely for edit/delete
 // (SheetDB matches ALL rows with a given column value, so a stable unique key is required).
@@ -575,7 +575,7 @@ async function deleteRecord(type, id, btn) {
 
     btn.disabled = true;
     try {
-        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'Sheet2'), { method: 'DELETE' });
+        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), { method: 'DELETE' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         if (isMaintenance) {
@@ -603,7 +603,7 @@ async function saveRecord(type, id, btn) {
 
     btn.disabled = true;
     try {
-        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'Sheet2'), {
+        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: updates })

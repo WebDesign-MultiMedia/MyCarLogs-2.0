@@ -98,6 +98,33 @@ You can add or remove any vehicle directly from the form using the **+ Add / Rem
 
 ---
 
+## Google Sheet Setup
+
+Records are stored in one Google Sheet connected to SheetDB (`https://sheetdb.io/api/v1/f85paemez3pqc`). The sheet needs **two tabs**, and the tab names and row-1 headers must match exactly (case-sensitive). SheetDB silently drops any field that has no matching column.
+
+### Tab 1: `maintenance/repairs` (first tab, default)
+
+| ID | Date | Mileage | MainenanceRepairs | VehicleSide | Vehicle | Parts | Service_Provider | SPLocation | Cost | Notes_Issues |
+|---|---|---|---|---|---|---|---|---|---|---|
+
+> `MainenanceRepairs` is intentionally spelled this way: the code uses this exact key.
+
+### Tab 2: `parts`
+
+| ID | Date_Purchased | Parts_Name | Parts_Location | Parts_Brand | Price | Purchased | Vehicle |
+|---|---|---|---|---|---|---|---|
+
+### Rules
+
+- **`ID` column is required** in both tabs. Edit and delete target a single row by its ID, because SheetDB updates every row that matches a value. Every row needs its own number (1, 2, 3, …). New records get the next ID after the current highest one.
+- **Store dropdown values in English.** The UI translates them for display (`i18n.js`), but the sheet must hold the stable English values:
+  - Type: `Maintenance`, `Repair`
+  - Location: `Front-Driver`, `Front-Pass`, `Rear-Driver`, `Rear-Pass`, `Front-(Drive|Pass)`, `Rear-(Drive|Pass)`, `Engine`, `Transmission`
+- Column order doesn't matter, but the header names do. Extra columns (e.g. a `LEGEND` column) are ignored.
+- If a tab is renamed in Google Sheets, update `SHEETDB_PARTS_URL` and the `sheetRowUrl(...)` calls in `ManRep.js`.
+
+---
+
 ## Running Locally
 
 ```bash
