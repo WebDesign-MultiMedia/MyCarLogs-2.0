@@ -9,6 +9,7 @@ const translations = {
         nav_records_title: 'Records',
         nav_timeline_title: 'Mileage Timeline',
         nav_scans_title: 'Scan Reports',
+        hard_refresh_title: 'Refresh — load the latest version',
         sc_title: 'Scan Reports',
         sc_subtitle: 'Save OBD2 scanner reports and track trouble codes over time',
         sc_upload_title: 'Upload a scan report',
@@ -271,6 +272,7 @@ const translations = {
         nav_records_title: 'Registros',
         nav_timeline_title: 'Historial de Millaje',
         nav_scans_title: 'Reportes de Escaneo',
+        hard_refresh_title: 'Actualizar — cargar la última versión',
         sc_title: 'Reportes de Escaneo',
         sc_subtitle: 'Guarda reportes del escáner OBD2 y sigue los códigos de falla',
         sc_upload_title: 'Subir un reporte de escaneo',
@@ -542,7 +544,21 @@ function applyLanguage() {
     const lang = getLang();
     document.documentElement.lang = lang;
 
-    document.querySelectorAll('.lang-btn').forEach(btn => {
+    // Hard refresh: re-download the page, scripts and styles past the browser cache, then reload.
+async function hardRefresh() {
+    const btn = document.getElementById('hardRefreshBtn');
+    if (btn) btn.querySelector('i').classList.add('fa-spin');
+    const same = u => { try { return new URL(u, location.href).origin === location.origin; } catch { return false; } };
+    const urls = [location.href.split('#')[0],
+        ...[...document.scripts].map(s => s.src),
+        ...[...document.querySelectorAll('link[rel="stylesheet"]')].map(l => l.href)].filter(u => u && same(u));
+    await Promise.all(urls.map(u => fetch(u, { cache: 'reload' }).catch(() => {})));
+    try { if ('caches' in window) await Promise.all((await caches.keys()).map(k => caches.delete(k))); } catch { }
+    location.reload();
+}
+document.getElementById('hardRefreshBtn')?.addEventListener('click', hardRefresh);
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
         const active = btn.dataset.lang === lang;
         btn.classList.toggle('bg-logoClr', active);
         btn.classList.toggle('text-gray-900', active);
