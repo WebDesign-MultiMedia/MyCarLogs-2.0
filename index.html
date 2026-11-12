@@ -8,18 +8,19 @@
 </head>
 <body class="bg-gray-800 bg-gradient-to-b from-gray-800 via-gray-800 to-gray-900 min-h-screen">
 
-<nav class="flex flex-row justify-between items-center relative top-4 px-3 py-2 sm:px-4 gap-3">
-  <img src="./imgs/spare-parts.png" alt="" class="w-14 sm:w-20">
+<nav class="flex flex-row justify-between items-center relative top-4 px-3 py-2 sm:px-4 gap-2 sm:gap-3">
+  <img src="./imgs/spare-parts.png" alt="" class="w-11 sm:w-20 shrink-0">
   <div class="flex items-center gap-2 sm:gap-4">
     <div class="flex bg-black rounded-full p-1 text-xs sm:text-sm font-semibold">
       <button type="button" class="lang-btn px-2.5 sm:px-3 py-1.5 rounded-full transition-colors duration-150 text-gray-400" data-lang="en">EN</button>
       <button type="button" class="lang-btn px-2.5 sm:px-3 py-1.5 rounded-full transition-colors duration-150 text-gray-400" data-lang="es">ES</button>
     </div>
     <section>
-      <ul class="flex flex-row gap-5 sm:gap-10 text-2xl sm:text-4xl bg-black px-4 py-3 sm:p-5 rounded-full text-logoClr">
+      <ul class="flex flex-row gap-3.5 sm:gap-8 text-xl sm:text-4xl bg-black px-3.5 py-2.5 sm:p-5 rounded-full text-logoClr">
         <li id="navClipboard" class="cursor-pointer" data-i18n-title="nav_log_title"><i class="fa-sharp-duotone fa-light fa-clipboard-list"></i></li>
         <li id="navGears" class="cursor-pointer" data-i18n-title="nav_parts_title"><i class="fa-sharp-duotone fa-light fa-gears text-logoClrBlue"></i></li>
         <li id="navSpreadsheet" class="cursor-pointer" data-i18n-title="nav_records_title"><i class="fa-sharp-duotone fa-light fa-file-spreadsheet text-spreadsheetClr"></i></li>
+        <li id="navTimeline" class="cursor-pointer" data-i18n-title="nav_timeline_title"><i class="fa-sharp-duotone fa-light fa-road text-amber-300"></i></li>
       </ul>
     </section>
   </div>
@@ -308,6 +309,22 @@
     </div>
   </section>
 
+  <!-- Mileage Timeline -->
+  <section id="timeline" style="display:none">
+    <div class="w-full max-w-2xl mx-auto">
+      <div class="flex items-center gap-3.5 mb-5">
+        <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-amber-300/15 border border-amber-300/30 text-amber-300 text-lg">
+          <i class="fa-sharp-duotone fa-light fa-road"></i>
+        </div>
+        <div>
+          <h2 class="text-txtWht text-lg sm:text-xl font-semibold tracking-tight" data-i18n="tl_title">Mileage Timeline</h2>
+          <p class="text-gray-400 text-xs sm:text-sm" data-i18n="tl_subtitle">Every service, by odometer reading</p>
+        </div>
+      </div>
+      <div id="timelineContent"></div>
+    </div>
+  </section>
+
 </main>
 
 <!-- Vehicle Manager Modal -->
@@ -349,5 +366,6 @@
 <script src="./i18n.js"></script>
 <script src="./ManRep.js"></script>
 <script src="./parts.js"></script>
+<script src="./timeline.js"></script>
 </body>
 </html>

@@ -31,17 +31,21 @@ serviceToggleBtn.addEventListener('click', toggleServiceSection);
 const logFormSection = document.getElementById('logForm');
 const partsFormSection = document.getElementById('partsFormtwo');
 const recordsSection = document.getElementById('records');
+const timelineSection = document.getElementById('timeline');
 const navClipboard = document.getElementById('navClipboard');
 const navGears = document.getElementById('navGears');
 const navSpreadsheet = document.getElementById('navSpreadsheet');
+const navTimeline = document.getElementById('navTimeline');
 
 function showSection(name) {
     logFormSection.style.display = name === 'log' ? 'block' : 'none';
     partsFormSection.style.display = name === 'parts' ? 'block' : 'none';
     recordsSection.style.display = name === 'records' ? 'block' : 'none';
+    timelineSection.style.display = name === 'timeline' ? 'block' : 'none';
     navClipboard.style.opacity = name === 'log' ? '1' : '0.4';
     navGears.style.opacity = name === 'parts' ? '1' : '0.4';
     navSpreadsheet.style.opacity = name === 'records' ? '1' : '0.4';
+    navTimeline.style.opacity = name === 'timeline' ? '1' : '0.4';
 }
 
 showSection('log');

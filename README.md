@@ -58,6 +58,9 @@ Click the spreadsheet icon to see everything logged. Records pull live from Goog
 
 On mobile, records display as stacked cards. On desktop, they display as a full table.
 
+### Mileage Timeline
+Tap the road icon to see each vehicle's service history laid out by odometer reading, newest first. The header shows the current (latest) mileage, number of service stops, miles tracked and total spent. Records logged at the same mileage are grouped into one card; tap a card to see notes and the service provider. Between cards you'll see how many miles and days passed. Records with no mileage are left out and counted at the bottom.
+
 ### Vehicle Management
 Vehicles are not hardcoded. You can add any car at any time and remove ones you no longer own. Both the Maintenance and Parts forms stay in sync automatically. Vehicle filter buttons in the Records view also update to match.
 
