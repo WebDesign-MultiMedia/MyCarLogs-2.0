@@ -115,16 +115,7 @@ function buildTimeline(vehicle) {
     });
     const list = [...stops.values()].sort((a, b) => b.miles - a.miles);
 
-    // Link each oil change to the previous one (list is newest first, so "previous" is further down).
-    const oilStops = list.filter(s => s.records.some(isOilChange));
-    oilStops.forEach((s, i) => {
-        s.isOil = true;
-        const prev = oilStops[i + 1];
-        s.oilGap = prev ? {
-            miles: s.miles - prev.miles,
-            days: s.date && prev.date ? Math.round((s.date - prev.date) / 86400000) : null
-        } : null;
-    });
+    linkJobHistory(list);
     return { list, undated, total: records.length };
 }
 
@@ -153,14 +144,115 @@ function splitWorkItems(text) {
     });
 }
 
-function oilGapHtml(stop) {
-    if (!stop.isOil) return '';
-    const text = stop.oilGap
-        ? t('tl_oil_since').replace('{mi}', fmtMiles(stop.oilGap.miles)) +
-          (stop.oilGap.days !== null ? ` · ${t('tl_days').replace('{n}', stop.oilGap.days.toLocaleString())}` : '')
-        : t('tl_oil_first');
-    return `<div class="flex items-center gap-2.5 rounded-lg bg-amber-400/10 border border-amber-400/20 px-3 py-2 text-xs text-amber-100">
-      <i class="fa-solid fa-oil-can text-amber-300"></i><span>${text}</span></div>`;
+// ---- Job history: "since last" for routine maintenance, repeat-repair flags for parts ----
+// kind 'maint' = recurring service (shows miles since the last one).
+// kind 'repair' = part replacement (also flagged red when it comes back too soon).
+// axle: true = front and rear are tracked separately (rear pads ≠ front pads).
+const notCabin = s => !/cabin/i.test(s);
+const JOBS = [
+    { id: 'oil', kind: 'maint', icon: 'fa-oil-can', record: isOilChange },
+    { id: 'trans_fluid', kind: 'maint', icon: 'fa-gears', re: /transmission fluid|\batf\b/i },
+    { id: 'brake_fluid', kind: 'maint', icon: 'fa-droplet', re: /brake fluid/i },
+    { id: 'coolant', kind: 'maint', icon: 'fa-temperature-half', re: /coolant|antifreeze/i },
+    { id: 'air_filter', kind: 'maint', icon: 'fa-wind', re: /air filter/i, also: notCabin },
+    { id: 'cabin_filter', kind: 'maint', icon: 'fa-fan', re: /cabin (air )?filter/i },
+    { id: 'spark_plugs', kind: 'maint', icon: 'fa-bolt', re: /spark plug/i },
+    { id: 'tires', kind: 'maint', icon: 'fa-circle-dot', re: /\btires?\b/i },
+    { id: 'inspection', kind: 'maint', icon: 'fa-clipboard-check', re: /inspection/i },
+    { id: 'brake_pads', kind: 'repair', axle: true, re: /\b(brake|break)s? pads?\b|^pads?$/i },
+    { id: 'rotors', kind: 'repair', axle: true, re: /rotors?\b/i },
+    { id: 'struts', kind: 'repair', axle: true, re: /\bstruts?\b|\bshocks?\b/i },
+    { id: 'control_arms', kind: 'repair', axle: true, re: /control arms?/i },
+    { id: 'cv_axle', kind: 'repair', axle: true, re: /\baxle\b/i },
+    { id: 'abs', kind: 'repair', re: /\babs\b.*(module|pump)|vsa module/i },
+    { id: 'control_solenoid', kind: 'repair', re: /control solenoid/i },
+    { id: 'shift_solenoid', kind: 'repair', re: /shift solenoid/i },
+    { id: 'battery', kind: 'repair', re: /batter/i, also: s => !/cable|terminal/i.test(s) },
+    { id: 'starter', kind: 'repair', re: /\bstart(e|a)r\b|\bstater\b/i },
+    { id: 'alternator', kind: 'repair', re: /alternator/i },
+    { id: 'blower', kind: 'repair', re: /blower motor/i }
+];
+const REPEAT_MILES = 5000;
+const REPEAT_DAYS = 183;
+
+// Front/rear from the item text first ("Rear Brake Pads"), then the record's location.
+function axleOf(text, loc) {
+    if (/\b(front|rear) ?(&|and) ?(front|rear)\b|all (four )?(corners|sides)|4 sides/i.test(text)) return 'both';
+    if (/\bfront\b|\bfr\b|\bfl\b/i.test(text)) return 'front';
+    if (/\brear\b|\brr\b|\brl\b/i.test(text)) return 'rear';
+    if (/^Front[-–]/.test(loc || '')) return 'front';
+    if (/^Rear[-–]/.test(loc || '')) return 'rear';
+    if (loc === 'Front & Rear' || loc === 'All Corners') return 'both';
+    return null;
+}
+const axlesOverlap = (a, b) => !a || !b || a === b || a === 'both' || b === 'both';
+
+// Finds which jobs a stop contains. Parts text only (notes mention other work too),
+// except oil changes, which are sometimes only written in the notes.
+function jobsInStop(stop) {
+    const found = new Map();
+    stop.records.forEach(r => {
+        JOBS.forEach(job => {
+            if (job.record) {
+                if (job.record(r)) found.set(job.id, { job, axle: null });
+                return;
+            }
+            splitWorkItems(r.Parts).forEach(({ name }) => {
+                if (!job.re.test(name) || (job.also && !job.also(name))) return;
+                const axle = job.axle ? axleOf(name, r.VehicleSide) : null;
+                found.set(job.id + ':' + (axle || ''), { job, axle });
+            });
+        });
+    });
+    return [...found.values()];
+}
+
+// Walks oldest → newest, linking each job to the previous time it was done (same axle).
+function linkJobHistory(list) {
+    const history = {}; // job id -> [{ stop, axle }]
+    [...list].reverse().forEach(stop => {
+        stop.jobEvents = jobsInStop(stop).map(ev => {
+            const past = history[ev.job.id] || [];
+            const prev = [...past].reverse().find(p => p.stop !== stop && axlesOverlap(p.axle, ev.axle));
+            const gap = prev ? {
+                miles: stop.miles - prev.stop.miles,
+                days: stop.date && prev.stop.date ? Math.round((stop.date - prev.stop.date) / 86400000) : null
+            } : null;
+            const repeat = !!gap && ev.job.kind === 'repair' &&
+                (gap.miles < REPEAT_MILES || (gap.days !== null && gap.days < REPEAT_DAYS));
+            return { ...ev, gap, repeat };
+        });
+        stop.jobEvents.forEach(ev => (history[ev.job.id] = history[ev.job.id] || []).push({ stop, axle: ev.axle }));
+    });
+}
+
+function jobName(ev) {
+    const name = t('job_' + ev.job.id);
+    return ev.axle && ev.axle !== 'both' ? `${name} (${t('axle_' + ev.axle)})` : name;
+}
+function fillJob(template, ev) {
+    const out = template.replace('{job}', jobName(ev)).replace('{mi}', fmtMiles(ev.gap ? ev.gap.miles : 0));
+    return template.startsWith('{job}') ? out.charAt(0).toUpperCase() + out.slice(1) : out;
+}
+function daysSuffix(ev) {
+    return ev.gap && ev.gap.days !== null ? ` · ${t('tl_days').replace('{n}', ev.gap.days.toLocaleString())}` : '';
+}
+
+// One line per tracked job in this stop: red repeat flag, amber oil line, or neutral "since last".
+function jobInsightsHtml(stop) {
+    const lines = (stop.jobEvents || []).map(ev => {
+        if (ev.repeat) return { order: 0, cls: 'bg-red-500/10 border-red-400/30 text-red-100', icon: 'fa-triangle-exclamation text-red-300',
+            text: fillJob(t('tl_repeat'), ev) + daysSuffix(ev) };
+        if (ev.job.id === 'oil') return { order: 1, cls: 'bg-amber-400/10 border-amber-400/20 text-amber-100', icon: 'fa-oil-can text-amber-300',
+            text: ev.gap ? fillJob(t('tl_since'), ev) + daysSuffix(ev) : t('tl_oil_first') };
+        if (!ev.gap) return null;
+        return { order: 2, cls: 'bg-sky-400/5 border-sky-300/15 text-gray-200', icon: `${ev.job.icon || 'fa-rotate'} text-sky-300`,
+            text: fillJob(ev.job.kind === 'repair' ? t('tl_prev_replaced') : t('tl_since'), ev) + daysSuffix(ev) };
+    }).filter(Boolean).sort((a, b) => a.order - b.order);
+    if (!lines.length) return '';
+    return `<div class="flex flex-col gap-1.5">${lines.map(l =>
+        `<div class="flex items-center gap-2.5 rounded-lg border px-3 py-2 text-xs ${l.cls}">
+          <i class="fa-solid ${l.icon} w-3.5 text-center"></i><span>${l.text}</span></div>`).join('')}</div>`;
 }
 
 function timelineVehicleChips(vehicles) {
@@ -215,7 +307,7 @@ function stopCardHtml(stop) {
         <div class="flex flex-wrap justify-end gap-1.5">${badges}</div>
       </header>
       <ul class="flex flex-col gap-1.5 text-gray-200 text-sm">${shown.join('')}${moreLine}</ul>
-      ${oilGapHtml(stop)}
+      ${jobInsightsHtml(stop)}
       ${providers}
       <footer class="flex items-center justify-between pt-2 border-t border-white/5">
         <span class="text-sm font-semibold ${stop.cost ? 'text-txtWht' : 'text-gray-500'}">${stop.cost ? `${t('tl_cost')}: ${fmtMoney(stop.cost)}` : t('tl_no_cost')}</span>

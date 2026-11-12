@@ -61,6 +61,8 @@ On mobile, records display as stacked cards. On desktop, they display as a full 
 ### Mileage Timeline
 Tap the road icon to see each vehicle's service history laid out by odometer reading, newest first. The header shows the current (latest) mileage, number of service stops, miles tracked and total spent. Records logged at the same mileage are grouped into one card; tap a card to see notes and the service provider. Between cards you'll see how many miles and days passed. Records with no mileage are left out and counted at the bottom.
 
+**Service history on each card:** routine maintenance (oil, transmission fluid, brake fluid, coolant, air/cabin filters, spark plugs, tires, inspection) shows how many miles and days since the last one. Part replacements (brake pads, rotors, struts, control arms, CV axles, ABS module, solenoids, battery, starter, alternator, blower motor) show when that part was last replaced; front and rear are tracked separately. If the same part is replaced again within 5,000 mi or 6 months, the card shows a red **Repeat repair** flag, often a sign of a bad part or install. Matching is by keywords in the Parts field, so new job types are added to the `JOBS` list in `timeline.js`.
+
 **Search & filters:** a search bar pinned to the top of the timeline finds services by part, notes, location or shop name (all words must match; matches are highlighted). Filter by type (Maintenance, Repair, Inspection, Purchase) or use a quick filter: Oil changes, Brakes, Tires & wheels, Transmission, Battery & starting. The miles/days between cards are recalculated between the matching services, so you can see how long each brake job or oil change lasted.
 
 ### Vehicle Management
