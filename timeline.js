@@ -62,7 +62,35 @@ function buildTimeline(vehicle) {
         if (r.Service_Provider) s.providers.add(r.Service_Provider);
     });
     const list = [...stops.values()].sort((a, b) => b.miles - a.miles);
+
+    // Link each oil change to the previous one (list is newest first, so "previous" is further down).
+    const oilStops = list.filter(s => s.records.some(isOilChange));
+    oilStops.forEach((s, i) => {
+        s.isOil = true;
+        const prev = oilStops[i + 1];
+        s.oilGap = prev ? {
+            miles: s.miles - prev.miles,
+            days: s.date && prev.date ? Math.round((s.date - prev.date) / 86400000) : null
+        } : null;
+    });
     return { list, undated, total: records.length };
+}
+
+// Oil changes are written many ways ("Oil & Filter Changed", "Engine Oil, Oil Filter…",
+// or only in the notes), so match "oil … filter" and skip other oil-related parts.
+function isOilChange(r) {
+    if (/\b(cap|solenoid|gasket|valve|pan|pump|leak)\b/i.test(r.Parts || '')) return false;
+    return /\boil\b[^|;]{0,25}\bfilter\b/i.test(`${r.Parts || ''} ${r.Notes_Issues || ''}`);
+}
+
+function oilGapHtml(stop) {
+    if (!stop.isOil) return '';
+    const text = stop.oilGap
+        ? t('tl_oil_since').replace('{mi}', fmtMiles(stop.oilGap.miles)) +
+          (stop.oilGap.days !== null ? ` · ${t('tl_days').replace('{n}', stop.oilGap.days.toLocaleString())}` : '')
+        : t('tl_oil_first');
+    return `<div class="flex items-center gap-2.5 rounded-lg bg-amber-400/10 border border-amber-400/20 px-3 py-2 text-xs text-amber-100">
+      <i class="fa-solid fa-oil-can text-amber-300"></i><span>${text}</span></div>`;
 }
 
 function timelineVehicleChips(vehicles) {
@@ -109,6 +137,7 @@ function stopCardHtml(stop) {
         <div class="flex flex-wrap justify-end gap-1.5">${badges}</div>
       </header>
       <ul class="flex flex-col gap-1.5 text-gray-200 text-sm">${shown.join('')}${moreLine}</ul>
+      ${oilGapHtml(stop)}
       ${providers}
       <footer class="flex items-center justify-between pt-2 border-t border-white/5">
         <span class="text-sm font-semibold ${stop.cost ? 'text-txtWht' : 'text-gray-500'}">${stop.cost ? `${t('tl_cost')}: ${fmtMoney(stop.cost)}` : t('tl_no_cost')}</span>
