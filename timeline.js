@@ -13,6 +13,58 @@ const TYPE_STYLES = {
 let timelineVehicle = null;
 const expandedTimelineCards = new Set();
 
+// Filter state (kept when switching vehicles, so "brake" can be compared across cars).
+let tlQuery = '';
+let tlType = 'all';
+let tlQuick = null;
+
+// Quick searches. Data is stored in English, so these match English words regardless of UI language.
+const TL_QUICK = [
+    { id: 'oil', key: 'tl_quick_oil', icon: 'fa-oil-can', test: r => isOilChange(r) },
+    { id: 'brakes', key: 'tl_quick_brakes', icon: 'fa-circle-stop', re: /brake|rotor|\babs\b/i },
+    { id: 'tires', key: 'tl_quick_tires', icon: 'fa-circle-dot', re: /tire|tpms|wheel|alignment/i },
+    { id: 'trans', key: 'tl_quick_trans', icon: 'fa-gears', re: /transmission|shift solenoid|control solenoid/i },
+    { id: 'battery', key: 'tl_quick_battery', icon: 'fa-car-battery', re: /batter|alternator|starter/i }
+];
+
+const normalize = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const queryWords = () => normalize(tlQuery).split(/\s+/).filter(Boolean);
+const filtersActive = () => !!(tlQuery.trim() || tlType !== 'all' || tlQuick);
+
+function recordMatches(r) {
+    if (tlType !== 'all' && r.MainenanceRepairs !== tlType) return false;
+    if (tlQuick) {
+        const q = TL_QUICK.find(x => x.id === tlQuick);
+        const text = `${r.Parts} ${r.Notes_Issues}`;
+        if (q && !(q.test ? q.test(r) : q.re.test(text))) return false;
+    }
+    const words = queryWords();
+    if (!words.length) return true;
+    const hay = normalize([r.Parts, r.Notes_Issues, r.VehicleSide, locationLabel(r.VehicleSide),
+        r.MainenanceRepairs, typeLabel(r.MainenanceRepairs), r.Service_Provider, r.SPLocation].join(' '));
+    return words.every(w => hay.includes(w));
+}
+
+// Escapes text and wraps search-word matches in <mark> (matching on raw text, so entities are never split).
+function hl(text) {
+    const raw = String(text || '');
+    const words = queryWords();
+    if (!words.length) return escapeHtml(raw);
+    const norm = normalize(raw);
+    const marks = new Array(raw.length).fill(false);
+    // NFD normalize can change length for accented chars; only highlight when lengths line up.
+    if (norm.length === raw.length) {
+        words.forEach(w => { let i = norm.indexOf(w); while (i !== -1) { for (let k = i; k < i + w.length; k++) marks[k] = true; i = norm.indexOf(w, i + 1); } });
+    }
+    let out = '', open = false;
+    for (let i = 0; i < raw.length; i++) {
+        if (marks[i] && !open) { out += '<mark class="bg-amber-300/25 text-amber-100 rounded-sm">'; open = true; }
+        if (!marks[i] && open) { out += '</mark>'; open = false; }
+        out += escapeHtml(raw[i]);
+    }
+    return out + (open ? '</mark>' : '');
+}
+
 function safeGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function safeSet(key, val) { try { localStorage.setItem(key, val); } catch { /* ignore */ } }
 
@@ -124,17 +176,18 @@ function timelineVehicleChips(vehicles) {
 function stopCardHtml(stop) {
     const key = `${timelineVehicle}:${stop.miles}`;
     const expanded = expandedTimelineCards.has(key);
-    const items = stop.records.flatMap(r => {
+    const items = (stop.shown || stop.records).flatMap(r => {
         const parts = splitWorkItems(r.Parts);
         if (!parts.length) parts.push({ name: typeLabel(r.MainenanceRepairs) || '-', detail: '' });
         return parts.map((p, i) => {
             // Location on the record's first item, notes after its last, so they aren't repeated.
             const loc = i === 0 && r.VehicleSide ? `<span class="text-gray-500"> · ${escapeHtml(locationLabel(r.VehicleSide))}</span>` : '';
-            const detail = p.detail ? `<span class="block text-gray-500 text-xs">${escapeHtml(p.detail)}</span>` : '';
-            const note = expanded && i === parts.length - 1 && r.Notes_Issues
-                ? `<p class="text-gray-400 text-xs mt-1 pl-1 border-l-2 border-white/10 ml-0.5">${escapeHtml(r.Notes_Issues)}</p>` : '';
+            const detail = p.detail ? `<span class="block text-gray-500 text-xs">${hl(p.detail)}</span>` : '';
+            const noteMatched = queryWords().length && queryWords().some(w => normalize(r.Notes_Issues).includes(w));
+            const note = (expanded || noteMatched) && i === parts.length - 1 && r.Notes_Issues
+                ? `<p class="text-gray-400 text-xs mt-1 pl-1 border-l-2 border-white/10 ml-0.5">${hl(r.Notes_Issues)}</p>` : '';
             return `<li class="flex gap-2"><span class="text-logoClr mt-[0.45rem] w-1.5 h-1.5 rounded-full bg-logoClr shrink-0"></span>
-              <div class="min-w-0">${escapeHtml(p.name)}${loc}${detail}${note}</div></li>`;
+              <div class="min-w-0">${hl(p.name)}${loc}${detail}${note}</div></li>`;
         });
     });
     const shown = expanded ? items : items.slice(0, TIMELINE_PREVIEW_ITEMS);
@@ -147,8 +200,9 @@ function stopCardHtml(stop) {
 
     const moreLine = hidden > 0
         ? `<li class="text-gray-500 text-sm pl-3.5">${t('tl_more').replace('{n}', hidden)}</li>` : '';
-    const providers = expanded && stop.providers.size
-        ? `<p class="text-gray-400 text-xs"><i class="fa-solid fa-user-tie mr-1.5 text-gray-500"></i>${escapeHtml([...stop.providers].join(', '))}</p>` : '';
+    const providerMatched = queryWords().some(w => normalize([...stop.providers].join(' ')).includes(w));
+    const providers = (expanded || providerMatched) && stop.providers.size
+        ? `<p class="text-gray-400 text-xs"><i class="fa-solid fa-user-tie mr-1.5 text-gray-500"></i>${hl([...stop.providers].join(', '))}</p>` : '';
 
     return `
     <article data-timeline-card="${escapeHtml(key)}"
@@ -223,9 +277,55 @@ function renderTimeline() {
       </div>
     </div>`;
 
-    if (!list.length) {
-        container.innerHTML = header + `<p class="text-gray-400 text-center py-8">${t('tl_empty')}</p>`;
-        return;
+    const chip = (attrs, active, label, icon) => `<button type="button" ${attrs}
+      class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs border transition-colors duration-150 whitespace-nowrap ${active
+        ? 'bg-amber-300/15 text-amber-200 border-amber-300/50 font-semibold'
+        : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-txtWht'}">${icon ? `<i class="fa-solid ${icon} text-[10px]"></i>` : ''}${label}</button>`;
+    const rowCls = 'flex gap-2 overflow-x-auto -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+    const controls = `
+    <div class="sticky top-2 z-20 mb-6 rounded-2xl border border-white/10 bg-gray-900/85 backdrop-blur-md shadow-xl shadow-black/40 p-3 flex flex-col gap-2.5">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none"></i>
+        <input id="tlSearch" type="search" autocomplete="off" value="${escapeHtml(tlQuery)}" placeholder="${t('tl_search_placeholder')}"
+          class="w-full text-base rounded-xl border border-white/10 bg-gray-950/60 text-txtWht pl-10 pr-10 py-2.5 placeholder:text-gray-500 focus:outline-none focus:border-amber-300/60 focus:ring-2 focus:ring-amber-300/20 [&::-webkit-search-cancel-button]:hidden" />
+        <button type="button" id="tlSearchClear" aria-label="${t('tl_clear')}"
+          class="${tlQuery ? '' : 'hidden'} absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-gray-400 hover:text-txtWht hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="${rowCls}">
+        ${chip('data-tl-type="all"', tlType === 'all', t('filter_all'))}
+        ${TYPE_OPTIONS.map(o => chip(`data-tl-type="${o.value}"`, tlType === o.value, t(o.key), o.icon)).join('')}
+      </div>
+      <div class="${rowCls}">
+        ${TL_QUICK.map(q => chip(`data-tl-quick="${q.id}"`, tlQuick === q.id, t(q.key), q.icon)).join('')}
+      </div>
+      <div id="tlResultInfo" class="flex items-center justify-between text-xs text-gray-400 px-1"></div>
+    </div>`;
+
+    container.innerHTML = header + (list.length ? controls : '') + '<div id="timelineList"></div>';
+    renderTimelineList();
+}
+
+// Re-renders only the cards (so typing in the search box never loses focus).
+function renderTimelineList() {
+    const listEl = document.getElementById('timelineList');
+    if (!listEl) return;
+    const { list, undated } = buildTimeline(timelineVehicle);
+    if (!list.length) { listEl.innerHTML = `<p class="text-gray-400 text-center py-8">${t('tl_empty')}</p>`; return; }
+    const current = list[0].miles;
+
+    const active = filtersActive();
+    const visible = list
+        .map(stop => ({ ...stop, shown: active ? stop.records.filter(recordMatches) : stop.records }))
+        .filter(stop => stop.shown.length);
+
+    const info = document.getElementById('tlResultInfo');
+    if (info) {
+        info.innerHTML = active
+            ? `<span>${t('tl_results').replace('{n}', visible.length).replace('{total}', list.length)}</span>
+               <button type="button" id="tlClearAll" class="text-amber-200 font-semibold hover:underline">${t('tl_clear')}</button>`
+            : '';
+        info.classList.toggle('hidden', !active);
     }
 
     let body = `
@@ -235,16 +335,22 @@ function renderTimeline() {
       <span class="flex-1 h-px bg-logoClr/30"></span>
       <span class="text-gray-500 text-xs">${t('tl_you_are_here')}</span>
     </div>`;
-    list.forEach((stop, i) => {
+    if (!visible.length) {
+        body += `<div class="pl-10"><div class="rounded-2xl border border-dashed border-white/10 p-6 text-center flex flex-col items-center gap-3">
+          <i class="fa-solid fa-magnifying-glass text-gray-600 text-xl"></i>
+          <p class="text-gray-400 text-sm">${t('tl_no_match')}</p>
+          <button type="button" id="tlClearAll" class="text-amber-200 text-sm font-semibold hover:underline">${t('tl_clear')}</button></div></div>`;
+    }
+    visible.forEach((stop, i) => {
         body += `<div class="relative pl-10">
           <span class="absolute left-[11px] top-6 z-10 w-2.5 h-2.5 rounded-full bg-gray-900 border-2 border-logoClr"></span>
           ${stopCardHtml(stop)}</div>`;
-        if (i < list.length - 1) body += gapHtml(stop, list[i + 1]);
+        if (i < visible.length - 1) body += gapHtml(stop, visible[i + 1]);
     });
-    if (undated) body += `<p class="text-gray-500 text-xs text-center mt-6">${t('tl_undated').replace('{n}', undated)}</p>`;
+    if (undated && !active) body += `<p class="text-gray-500 text-xs text-center mt-6">${t('tl_undated').replace('{n}', undated)}</p>`;
 
     // Vertical rail runs behind the marker, nodes and gaps.
-    container.innerHTML = header + `<div class="relative">
+    listEl.innerHTML = `<div class="relative">
       <span class="absolute left-[15px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-logoClr/60 via-white/10 to-transparent"></span>
       ${body}</div>`;
 }
@@ -272,12 +378,30 @@ document.getElementById('timelineContent').addEventListener('click', e => {
         if (sel && [...sel.options].some(o => o.value === timelineVehicle)) sel.value = timelineVehicle;
         return;
     }
+    const typeChip = e.target.closest('[data-tl-type]');
+    if (typeChip) { tlType = typeChip.dataset.tlType; renderTimeline(); return; }
+    const quickChip = e.target.closest('[data-tl-quick]');
+    if (quickChip) { tlQuick = tlQuick === quickChip.dataset.tlQuick ? null : quickChip.dataset.tlQuick; renderTimeline(); return; }
+    if (e.target.closest('#tlClearAll')) { tlQuery = ''; tlType = 'all'; tlQuick = null; renderTimeline(); return; }
+    if (e.target.closest('#tlSearchClear')) {
+        tlQuery = '';
+        renderTimeline();
+        document.getElementById('tlSearch')?.focus();
+        return;
+    }
     const card = e.target.closest('[data-timeline-card]');
-    if (card && card.classList.contains('cursor-pointer')) {
+    if (card && card.classList.contains('cursor-pointer') && !window.getSelection().toString()) {
         const key = card.dataset.timelineCard;
         expandedTimelineCards.has(key) ? expandedTimelineCards.delete(key) : expandedTimelineCards.add(key);
-        renderTimeline();
+        renderTimelineList();
     }
+});
+
+document.getElementById('timelineContent').addEventListener('input', e => {
+    if (e.target.id !== 'tlSearch') return;
+    tlQuery = e.target.value;
+    document.getElementById('tlSearchClear')?.classList.toggle('hidden', !tlQuery);
+    renderTimelineList();
 });
 
 document.getElementById('navTimeline').addEventListener('click', () => {

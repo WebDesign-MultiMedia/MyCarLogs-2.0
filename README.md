@@ -61,6 +61,8 @@ On mobile, records display as stacked cards. On desktop, they display as a full 
 ### Mileage Timeline
 Tap the road icon to see each vehicle's service history laid out by odometer reading, newest first. The header shows the current (latest) mileage, number of service stops, miles tracked and total spent. Records logged at the same mileage are grouped into one card; tap a card to see notes and the service provider. Between cards you'll see how many miles and days passed. Records with no mileage are left out and counted at the bottom.
 
+**Search & filters:** a search bar pinned to the top of the timeline finds services by part, notes, location or shop name (all words must match; matches are highlighted). Filter by type (Maintenance, Repair, Inspection, Purchase) or use a quick filter: Oil changes, Brakes, Tires & wheels, Transmission, Battery & starting. The miles/days between cards are recalculated between the matching services, so you can see how long each brake job or oil change lasted.
+
 ### Vehicle Management
 Vehicles are not hardcoded. You can add any car at any time and remove ones you no longer own. Both the Maintenance and Parts forms stay in sync automatically. Vehicle filter buttons in the Records view also update to match.
 
