@@ -561,7 +561,10 @@ function scanCardHtml(scan, prev) {
     const tips = expanded ? dtcPatternInsights(dtcs, ctx) : [];
     const tipsHtml = tips.length ? `<div class="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
         <p class="${labelCls}"><i class="fa-solid fa-route mr-1.5"></i>${t('dg_start')}</p>
-        ${tips.map(tp => `<p class="flex gap-2 text-sm text-gray-200"><span class="mt-1.5 w-2 h-2 rounded-full shrink-0 ${DG_SEV_DOT[tp.sev]}"></span><span>${escapeHtml(tp.text)}</span></p>`).join('')}
+        <ol class="flex flex-col gap-2.5">${tips.map((tp, i) => `<li class="flex gap-2.5 text-sm text-gray-200">
+          <span class="shrink-0 w-5 h-5 mt-0.5 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-900 ${DG_SEV_DOT[tp.sev]}">${i + 1}</span>
+          <span class="min-w-0">${tp.codes ? `<span class="block text-txtWht font-semibold"><span class="font-mono text-xs mr-1.5">${escapeHtml(tp.codes.join(' · '))}</span>${escapeHtml(tp.title)}</span>` : ''}<span class="${tp.codes ? 'text-gray-300' : ''}">${escapeHtml(tp.text)}</span></span>
+        </li>`).join('')}</ol>
       </div>` : '';
 
     // Group codes by system for display.

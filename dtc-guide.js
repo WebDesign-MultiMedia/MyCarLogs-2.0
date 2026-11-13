@@ -400,7 +400,38 @@ function dtcPatternInsights(dtcs, ctx = {}) {
         en: 'Safety system code present (airbags or brakes). That warning system may not work until it\'s repaired — handle this one first.',
         es: 'Hay un código de sistema de seguridad (bolsas de aire o frenos). Ese sistema podría no funcionar hasta repararlo — atiéndelo primero.'
     }) });
-    return tips;
+
+    // One step for every other problem in the scan: codes with the same guide are grouped
+    // (e.g. several misfires), most urgent first, with that guide's first thing to check.
+    // Codes already explained by a pattern tip above are skipped.
+    const covered = d => {
+        const id = getDtcGuide(d).id;
+        if (id === 'comm' && (comm.length >= 3 || (byModule[(commTarget(d.desc) || '').toLowerCase()] || {}).n >= 2)) return true;
+        if (sensorFails.length >= 3 && (id === 'tpms_sensor' || id === 'tpms_low')) return true;
+        return false;
+    };
+    const groups = new Map();
+    dtcs.filter(d => !covered(d)).forEach(d => {
+        const g = getDtcGuide(d, ctx);
+        // Unknown codes (fallback guide) each get their own step; known ones group by guide.
+        const key = g.id === 'other' ? 'other:' + (d.code || d.desc) : g.id;
+        if (!groups.has(key)) groups.set(key, { guide: g, dtcs: [] });
+        const grp = groups.get(key);
+        if (!grp.dtcs.some(x => x.code === d.code && x.desc === d.desc)) grp.dtcs.push(d);
+    });
+    const rank = { safety: 0, soon: 1, monitor: 2 };
+    [...groups.values()].sort((a, b) => rank[a.guide.sev] - rank[b.guide.sev]).forEach(({ guide, dtcs: ds }) => {
+        const step = guide.check[0] || guide.fix;
+        if (!step) return;
+        tips.push({
+            sev: guide.sev,
+            codes: ds.map(d => d.code).filter(Boolean),
+            title: ds[0].desc + (ds.length > 1 ? fill(L({ en: ' (+{n} more)', es: ' (+{n} más)' }), { n: ds.length - 1 }) : ''),
+            text: step
+        });
+    });
+    // Most urgent first overall (stable: keeps the pattern tips ahead within the same level).
+    return tips.map((tp, i) => ({ tp, i })).sort((a, b) => rank[a.tp.sev] - rank[b.tp.sev] || a.i - b.i).map(x => x.tp);
 }
 
 if (typeof module !== 'undefined') module.exports = { getDtcGuide, dtcPatternInsights, vinModelYear, decodeCodeStructure, locationHint };
