@@ -20,7 +20,7 @@ A mobile-first web app for tracking everything done to a vehicle: maintenance, r
 
 | Area | How it shows up in this project |
 |---|---|
-| **Front-end without a framework** | About 4,800 lines of vanilla JavaScript split by feature (log forms, records, timeline, reminders, scans, VIN scanner). Single-page navigation, URL hash state that survives refresh, and responsive layouts (cards on phones, tables on desktop). |
+| **Front-end without a framework** | About 4,800 lines of vanilla JavaScript split by feature (log forms, records, timeline, reminders, scans, VIN scanner). Single-page navigation, URL hash state that survives refresh, and responsive layouts (cards on phones and tablets, tables on wide screens). |
 | **Back-end & security** | Vercel serverless API (`api/`) that proxies every data request. Password sign-in with signed, HttpOnly, SameSite=Strict session cookies. No API key ever reaches the browser, and the proxy only allows a fixed list of sheet tabs. |
 | **Working with real-world data** | Reads OBD2 scanner PDF reports in the browser (PDF text extraction, with OCR as a fallback for screenshots) and turns them into structured trouble codes. Compares each scan with the previous one (new, cleared, still present). |
 | **Device APIs** | Live camera barcode scanning for VINs (ZXing), cropped to an on-screen guide box so thin door-jamb barcodes decode reliably. Photo and OCR fallback. Installable to the home screen (web app manifest). |
@@ -93,7 +93,7 @@ Click the spreadsheet icon to see everything logged. Records pull live from Goog
 - **Vehicle** — All or a specific vehicle
 - **Type** — All / Maintenance & Repair / Parts only
 
-On mobile, records display as stacked cards. On desktop, they display as a full table.
+On phones, records display as stacked cards; on tablets and narrow windows, as two columns of cards. On wide screens (1024px and up), they display as a full table.
 
 ### Mileage Timeline
 Tap the road icon to see each vehicle's service history laid out by odometer reading, newest first. The header shows the current (latest) mileage, number of service stops, miles tracked and total spent. Records logged at the same mileage are grouped into one card; tap a card to see notes and the service provider. Between cards you'll see how many miles and days passed. Records with no mileage are left out and counted at the bottom.

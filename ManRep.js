@@ -729,8 +729,10 @@ function applyFiltersAndRender() {
 
         const mCards = maintenance.map(r => cardHtml(r, MAINTENANCE_FIELDS, 'maintenance', 'border-logoClr', 'text-logoClr', mExtras)).join('');
 
+        // Cards below 1024px wide (2 columns on tablets); the table only on wide screens, where
+        // the Notes column has room. min-w + overflow keep it readable in a narrow desktop window.
         const mTable = `
-        <table class="w-full text-txtWht text-sm border-collapse table-fixed">
+        <table class="w-full min-w-[56rem] text-txtWht text-sm border-collapse table-fixed">
           <colgroup>
             <col class="w-20">
             <col class="w-32">
@@ -762,8 +764,8 @@ function applyFiltersAndRender() {
 
         html += `
         <h3 class="text-logoClr text-lg sm:text-xl mb-3">${t('section_maintenance')}</h3>
-        <div class="sm:hidden space-y-3 mb-8">${mCards}</div>
-        <div class="hidden sm:block mb-8">${mTable}</div>`;
+        <div class="lg:hidden grid gap-3 sm:grid-cols-2 items-start mb-8">${mCards}</div>
+        <div class="hidden lg:block overflow-x-auto mb-8">${mTable}</div>`;
     }
 
     // ---- Parts ----
@@ -771,7 +773,7 @@ function applyFiltersAndRender() {
         const pCards = parts.map(r => cardHtml(r, PARTS_FIELDS, 'parts', 'border-logoClrBlue', 'text-logoClrBlue')).join('');
 
         const pTable = `
-        <table class="w-full text-txtWht text-sm border-collapse table-fixed">
+        <table class="w-full min-w-[56rem] text-txtWht text-sm border-collapse table-fixed">
           <colgroup>
             <col class="w-20">
             <col class="w-32">
@@ -801,8 +803,8 @@ function applyFiltersAndRender() {
 
         html += `
         <h3 class="text-logoClrBlue text-lg sm:text-xl mb-3">${t('section_parts')}</h3>
-        <div class="sm:hidden space-y-3 mb-8">${pCards}</div>
-        <div class="hidden sm:block mb-8">${pTable}</div>`;
+        <div class="lg:hidden grid gap-3 sm:grid-cols-2 items-start mb-8">${pCards}</div>
+        <div class="hidden lg:block overflow-x-auto mb-8">${pTable}</div>`;
     }
 
     container.innerHTML = html;
