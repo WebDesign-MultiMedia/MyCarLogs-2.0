@@ -12,6 +12,10 @@ A mobile-first web app for tracking everything done to a vehicle: maintenance, r
 | **Full VIN specs** | **OBD2 scan reports** | **Service log** |
 | <img src="docs/screenshots/vin-specs.jpg" alt="Full vehicle specifications from NHTSA" width="260"> | <img src="docs/screenshots/scan-reports.jpg" alt="Scan reports with upload area and trouble code counts" width="260"> | <img src="docs/screenshots/log-form.jpg" alt="Maintenance and repair log form" width="260"> |
 
+| **Records on a tablet** | **Records on a wide screen** |
+|---|---|
+| <img src="docs/screenshots/records-cards.jpg" alt="Records as two columns of cards on a tablet-width screen" width="300"> | <img src="docs/screenshots/records-table.jpg" alt="Records as a full table on a wide screen" width="520"> |
+
 ---
 
 ## For Recruiters & Hiring Managers
