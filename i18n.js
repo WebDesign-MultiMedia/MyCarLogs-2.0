@@ -9,6 +9,15 @@ const translations = {
         nav_records_title: 'Records',
         nav_timeline_title: 'Mileage Timeline',
         nav_scans_title: 'Scan Reports',
+        nav_vin_title: 'VIN Scanner',
+        vp_title: 'VIN Scanner',
+        vp_subtitle: 'Scan or type any VIN to see what vehicle it is',
+        vp_scan_btn: 'Scan VIN Barcode',
+        vp_or_type: 'Or type the VIN',
+        vp_saved_as: 'Saved in your vehicles as',
+        vp_open_vehicle: 'Open vehicle',
+        vp_save_vehicle: 'Save as a Vehicle',
+        vp_check_digit: "This VIN's check digit doesn't match. Double-check it against the door sticker.",
         hard_refresh_title: 'Refresh — load the latest version',
         sc_title: 'Scan Reports',
         sc_subtitle: 'Save OBD2 scanner reports and track trouble codes over time',
@@ -340,6 +349,7 @@ const translations = {
         vh_missing_tab: 'Vehicles are only saved in this browser. To sync them across your devices, add a tab named <b>vehicles</b> to your Google Sheet with these headers in row 1: <code>ID, Code, Name, VIN, Year, Make, Model, Trim, Engine</code>',
         vh_scan_help: 'Point at the VIN barcode on the door jamb and hold steady',
         vh_scan_loading: 'Starting the scanner…',
+        vh_scan_seen: 'Barcode found, looking for the VIN… keep the barcode inside the box',
         vh_scan_photo: 'Use a Photo',
         vh_scan_reading: 'Reading the photo…',
         vh_scan_none: 'No VIN found in that photo. Try closer, with good light, or type it in.',
@@ -361,6 +371,15 @@ const translations = {
         nav_records_title: 'Registros',
         nav_timeline_title: 'Historial de Millaje',
         nav_scans_title: 'Reportes de Escaneo',
+        nav_vin_title: 'Escáner de VIN',
+        vp_title: 'Escáner de VIN',
+        vp_subtitle: 'Escanea o escribe cualquier VIN para ver qué vehículo es',
+        vp_scan_btn: 'Escanear Código del VIN',
+        vp_or_type: 'O escribe el VIN',
+        vp_saved_as: 'Guardado en tus vehículos como',
+        vp_open_vehicle: 'Abrir vehículo',
+        vp_save_vehicle: 'Guardar como Vehículo',
+        vp_check_digit: 'El dígito de control de este VIN no coincide. Compáralo con la etiqueta de la puerta.',
         hard_refresh_title: 'Actualizar — cargar la última versión',
         sc_title: 'Reportes de Escaneo',
         sc_subtitle: 'Guarda reportes del escáner OBD2 y sigue los códigos de falla',
@@ -692,6 +711,7 @@ const translations = {
         vh_missing_tab: 'Los vehículos solo se guardan en este navegador. Para sincronizarlos entre tus dispositivos, agrega una pestaña llamada <b>vehicles</b> a tu Google Sheet con estos encabezados en la fila 1: <code>ID, Code, Name, VIN, Year, Make, Model, Trim, Engine</code>',
         vh_scan_help: 'Apunta al código de barras del VIN en el marco de la puerta y mantén firme',
         vh_scan_loading: 'Iniciando el escáner…',
+        vh_scan_seen: 'Código detectado, buscando el VIN… mantén el código dentro del recuadro',
         vh_scan_photo: 'Usar una Foto',
         vh_scan_reading: 'Leyendo la foto…',
         vh_scan_none: 'No se encontró un VIN en esa foto. Acércate, con buena luz, o escríbelo.',
@@ -759,6 +779,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
     if (typeof renderFormOptions === 'function') renderFormOptions();
     if (typeof renderTimeline === 'function') renderTimeline();
     if (typeof renderScans === 'function') renderScans();
+    if (typeof renderVinPage === 'function') renderVinPage();
     if (typeof updateServiceToggleLabel === 'function') updateServiceToggleLabel();
     if (typeof renderVehicleFilters === 'function') renderVehicleFilters();
     if (typeof vehicleModal !== 'undefined' && vehicleModal && !vehicleModal.classList.contains('hidden') && typeof renderVehicleManagerList === 'function') {

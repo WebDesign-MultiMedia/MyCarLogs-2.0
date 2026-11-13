@@ -1,6 +1,35 @@
 # MyCarLogs 2.0
 
-**Live Site:** https://mycarlogs.vercel.app (the old GitHub Pages address redirects here)
+**Live site:** https://mycarlogs.vercel.app · **Built with:** vanilla JavaScript, Tailwind CSS, Vercel serverless functions, Google Sheets
+
+A mobile-first web app for tracking everything done to a vehicle: maintenance, repairs, parts, mileage, OBD2 diagnostic scans and VIN lookups. I built it to manage my own family's cars and use it day to day, so features come from real needs rather than a tutorial checklist.
+
+---
+
+## For Recruiters & Hiring Managers
+
+**What this project shows**
+
+| Area | How it shows up in this project |
+|---|---|
+| **Front-end without a framework** | About 4,800 lines of vanilla JavaScript split by feature (log forms, records, timeline, reminders, scans, VIN scanner). Single-page navigation, URL hash state that survives refresh, and responsive layouts (cards on phones, tables on desktop). |
+| **Back-end & security** | Vercel serverless API (`api/`) that proxies every data request. Password sign-in with signed, HttpOnly, SameSite=Strict session cookies. No API key ever reaches the browser, and the proxy only allows a fixed list of sheet tabs. |
+| **Working with real-world data** | Reads OBD2 scanner PDF reports in the browser (PDF text extraction, with OCR as a fallback for screenshots) and turns them into structured trouble codes. Compares each scan with the previous one (new, cleared, still present). |
+| **Device APIs** | Live camera barcode scanning for VINs (ZXing), cropped to an on-screen guide box so thin door-jamb barcodes decode reliably. Photo and OCR fallback. Installable to the home screen (web app manifest). |
+| **Third-party APIs** | NHTSA vPIC for VIN decoding and full vehicle specs (cached per VIN), SheetDB for Google Sheets storage, and a Google Apps Script for private Google Drive uploads. |
+| **Domain logic** | Service reminders by miles or months (whichever comes first), with due-date estimates based on driving pace. Repeat-repair detection (the same part replaced again within 5,000 mi or 6 months). VIN check-digit validation. |
+| **Product polish** | Fully bilingual (English and Spanish), instant drawing from a local cache while syncing in the background, and setup steps shown inside the app when a sheet tab is missing. |
+
+**Quick tour of the code**
+
+| File | What it does |
+|---|---|
+| `ManRep.js` | Maintenance and parts forms, records view and filters, section navigation |
+| `timeline.js` · `reminders.js` | Mileage timeline, service history, repeat-repair flags, service reminders |
+| `scans.js` · `dtc-guide.js` | OBD2 report import (PDF and OCR), trouble-code tracking, plain-language code guide |
+| `vehicles.js` · `vehicle-specs.js` · `vin-page.js` | Vehicle profiles, VIN barcode scanner, NHTSA lookup, full spec sheet |
+| `auth.js` · `api/` | Sign-in screen and the serverless API (sessions, Sheets proxy, Drive upload) |
+| `i18n.js` | English and Spanish text |
 
 ---
 
@@ -74,6 +103,9 @@ Tap the stethoscope icon to save OBD2 scanner reports. Upload the **PDF report**
 
 The PDF/image is read in your browser; nothing is sent anywhere except your Google Sheet (data) and your Google Drive (file).
 
+### VIN Scanner
+Tap the barcode icon to look up any vehicle by its VIN, whether it's yours or not (useful at a used-car lot or a junkyard). Point the camera at the VIN barcode on the driver-side door jamb, take a photo of it, or type the 17 characters. The scanner only reads the area inside the on-screen box, so a thin barcode fills the frame and decodes reliably. It ignores extra characters some barcodes add (like a leading `I`) and uses the VIN's check digit to pick the right 17 characters. The result shows the year, make, model, trim and engine, then the full NHTSA spec sheet, and warns if the check digit doesn't match (a sign of a typo). If the VIN belongs to one of your vehicles, it links to it. Otherwise **Save as a Vehicle** opens the vehicle form already filled in (`vin-page.js`).
+
 ### Vehicle Management
 Vehicles are saved in the sheet's `vehicles` tab, so every device shows the same list (the browser keeps a copy so the page draws instantly). Each vehicle has a name and optional VIN, year, make, model, trim and engine. Type the VIN or **Scan VIN** (the barcode on the driver-side door jamb, live with the camera or from a photo), then **Look up VIN** to fill in the details from NHTSA's free vPIC service. Renaming a vehicle never breaks its history: records store the vehicle's fixed `Code`. The details show under the vehicle on the Timeline, and the model year helps the scan code guide. **Full specs** (on the Timeline, or **Full specifications** in the vehicle form) shows everything NHTSA has for that VIN, grouped into Vehicle, Engine (displacement, cylinders, horsepower, engine code, valve train), Drivetrain, Chassis & size (brakes, wheelbase, weight rating) and Safety (airbags, ABS, stability control, driver-assist features). Specs are cached in the browser per VIN (`vehicle-specs.js`). Older vehicles have fewer fields; oil capacity, tire size and fluid types are not in NHTSA's data.
 
@@ -87,6 +119,8 @@ Vehicles are saved in the sheet's `vehicles` tab, so every device shows the same
 | Styling | Tailwind CSS v3 |
 | Logic | Vanilla JavaScript (no frameworks) |
 | Icons | Font Awesome |
+| Barcode scanning | [ZXing](https://github.com/zxing-js/library) (camera and photos), Tesseract.js OCR as a fallback |
+| Vehicle data | NHTSA vPIC API (free, no key) |
 | Hosting & API | [Vercel](https://vercel.com) (static site + serverless functions in `api/`) |
 | Data storage | Google Sheets via [SheetDB](https://sheetdb.io) API, reached only through `/api/sheet` |
 | Local backup | Browser `localStorage` |
@@ -102,6 +136,9 @@ Data is saved to a connected Google Sheet through the SheetDB API (called by the
 | Clipboard | Maintenance / Repair log form |
 | Gears | Parts log form |
 | Spreadsheet | Records view with filters |
+| Road | Mileage timeline and service reminders |
+| Stethoscope | OBD2 scan reports |
+| Barcode | VIN scanner and vehicle spec lookup |
 
 ---
 
@@ -197,8 +234,6 @@ The site runs on **Vercel**. The browser never sees any key: it only talks to th
 | `DRIVE_SCRIPT_URL` / `DRIVE_UPLOAD_KEY` | Optional, for saving scan files to Drive (see above). |
 
 After changing a variable, redeploy (Vercel → Deployments → ⋯ → Redeploy, or push a commit). Every push to `main` deploys automatically.
-
----
 
 ---
 

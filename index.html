@@ -30,12 +30,13 @@
       <button type="button" id="hardRefreshBtn" data-i18n-title="hard_refresh_title" aria-label="Refresh" class="px-2 sm:px-3 py-1.5 rounded-full text-gray-400 hover:text-logoClr transition-colors duration-150"><i class="fa-solid fa-rotate-right"></i></button>
     </div>
     <section>
-      <ul class="flex flex-row gap-3 sm:gap-8 text-xl sm:text-4xl bg-black px-3 py-2.5 sm:p-5 rounded-full text-logoClr">
+      <ul class="flex flex-row gap-2.5 sm:gap-8 text-xl sm:text-4xl bg-black px-3 py-2.5 sm:p-5 rounded-full text-logoClr">
         <li id="navClipboard" class="cursor-pointer" data-i18n-title="nav_log_title"><i class="fa-sharp-duotone fa-light fa-clipboard-list"></i></li>
         <li id="navGears" class="cursor-pointer" data-i18n-title="nav_parts_title"><i class="fa-sharp-duotone fa-light fa-gears text-logoClrBlue"></i></li>
         <li id="navSpreadsheet" class="cursor-pointer" data-i18n-title="nav_records_title"><i class="fa-sharp-duotone fa-light fa-file-spreadsheet text-spreadsheetClr"></i></li>
         <li id="navTimeline" class="cursor-pointer" data-i18n-title="nav_timeline_title"><i class="fa-sharp-duotone fa-light fa-road text-amber-300"></i></li>
         <li id="navScans" class="cursor-pointer" data-i18n-title="nav_scans_title"><i class="fa-sharp-duotone fa-light fa-stethoscope text-red-400"></i></li>
+        <li id="navVin" class="cursor-pointer" data-i18n-title="nav_vin_title"><i class="fa-sharp-duotone fa-light fa-barcode-read text-sky-300"></i></li>
       </ul>
     </section>
   </div>
@@ -356,6 +357,22 @@
     </div>
   </section>
 
+  <!-- VIN Scanner -->
+  <section id="vinPage" style="display:none">
+    <div class="w-full max-w-2xl mx-auto">
+      <div class="flex items-center gap-3.5 mb-5">
+        <div class="flex items-center justify-center w-12 h-12 shrink-0 rounded-xl bg-sky-300/15 border border-sky-300/30 text-sky-300 text-lg">
+          <i class="fa-sharp-duotone fa-light fa-barcode-read"></i>
+        </div>
+        <div>
+          <h2 class="text-txtWht text-lg sm:text-xl font-semibold tracking-tight" data-i18n="vp_title">VIN Scanner</h2>
+          <p class="text-gray-400 text-xs sm:text-sm" data-i18n="vp_subtitle">Scan or type any VIN to see what vehicle it is</p>
+        </div>
+      </div>
+      <div id="vinPageContent"></div>
+    </div>
+  </section>
+
 </main>
 
 <!-- Vehicle Manager Modal -->
@@ -395,6 +412,7 @@
 <script src="./ManRep.js"></script>
 <script src="./vehicles.js"></script>
 <script src="./vehicle-specs.js"></script>
+<script src="./vin-page.js"></script>
 <script src="./parts.js"></script>
 <script src="./timeline.js"></script>
 <script src="./reminders.js"></script>

@@ -33,11 +33,13 @@ const partsFormSection = document.getElementById('partsFormtwo');
 const recordsSection = document.getElementById('records');
 const timelineSection = document.getElementById('timeline');
 const scansSection = document.getElementById('scans');
+const vinPageSection = document.getElementById('vinPage');
 const navClipboard = document.getElementById('navClipboard');
 const navGears = document.getElementById('navGears');
 const navSpreadsheet = document.getElementById('navSpreadsheet');
 const navTimeline = document.getElementById('navTimeline');
 const navScans = document.getElementById('navScans');
+const navVin = document.getElementById('navVin');
 
 function showSection(name) {
     logFormSection.style.display = name === 'log' ? 'block' : 'none';
@@ -45,11 +47,13 @@ function showSection(name) {
     recordsSection.style.display = name === 'records' ? 'block' : 'none';
     timelineSection.style.display = name === 'timeline' ? 'block' : 'none';
     scansSection.style.display = name === 'scans' ? 'block' : 'none';
+    vinPageSection.style.display = name === 'vin' ? 'block' : 'none';
     navClipboard.style.opacity = name === 'log' ? '1' : '0.4';
     navGears.style.opacity = name === 'parts' ? '1' : '0.4';
     navSpreadsheet.style.opacity = name === 'records' ? '1' : '0.4';
     navTimeline.style.opacity = name === 'timeline' ? '1' : '0.4';
     navScans.style.opacity = name === 'scans' ? '1' : '0.4';
+    navVin.style.opacity = name === 'vin' ? '1' : '0.4';
     // Remember the section in the URL (#timeline, #scans, …) so a refresh comes back here.
     try { history.replaceState(null, '', name === 'log' ? location.pathname + location.search : '#' + name); } catch { }
 }
@@ -60,7 +64,7 @@ showSection('log');
 // ---- Stay in place on refresh ----
 // After all scripts load, reopen the section from the URL by "clicking" its nav icon (so it
 // loads its data the normal way), then put the scroll back once the content is tall enough.
-const SECTION_NAV = { parts: 'navGears', records: 'navSpreadsheet', timeline: 'navTimeline', scans: 'navScans' };
+const SECTION_NAV = { parts: 'navGears', records: 'navSpreadsheet', timeline: 'navTimeline', scans: 'navScans', vin: 'navVin' };
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.addEventListener('pagehide', () => {
     try { sessionStorage.setItem('scrollPos', JSON.stringify({ hash: location.hash, y: window.scrollY })); } catch { }

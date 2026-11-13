@@ -5,11 +5,11 @@
 //   vehicles → ID | Code | Name | VIN | Year | Make | Model | Trim | Engine
 // Code is what records store in their Vehicle column (HP07, HO10…) and never changes,
 // so renaming a vehicle never breaks its history.
-// VIN lookup uses NHTSA's free vPIC service; the barcode scanner uses the browser's own
-// BarcodeDetector when it can read Code 39 (Android/Chrome), otherwise the ZXing library (iPhone).
+// VIN lookup uses NHTSA's free vPIC service; the live barcode scanner uses the
+// ZXing library on every phone and only decodes the area inside the on-screen guide box.
 
 const VEHICLES_URL = '/api/sheet?sheet=vehicles';
-const ZXING_SRC = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+const ZXING_SRC = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.23.0/umd/index.min.js';
 const vehicleSync = { loaded: false, tabMissing: false };
 let vmView = { mode: 'list' };        // 'list' | 'edit'
 let vmPendingDelete = false;
@@ -49,6 +49,7 @@ function refreshVehicleViews() {
     if (document.getElementById('timeline')?.style.display === 'block') renderTimeline();
     if (document.getElementById('scans')?.style.display === 'block' && typeof renderScans === 'function') renderScans();
     if (!vehicleModal.classList.contains('hidden')) renderVehicleManagerList();
+    if (document.getElementById('vinPage')?.style.display === 'block' && typeof renderVinPage === 'function') renderVinPage();
 }
 
 sessionReady.then(() => { if (appSession.authed) syncVehicles(); });
@@ -74,6 +75,17 @@ function vinCheckDigitOk(v) {
     const sum = [...v].reduce((s, c, i) => s + (/\d/.test(c) ? +c : map[c]) * w[i], 0);
     const r = sum % 11;
     return v[8] === (r === 10 ? 'X' : String(r));
+}
+// Finds the VIN inside a raw barcode payload that may carry extra characters
+// (an "I" import prefix, "VIN:" labels, longer PDF417 data). When several
+// 17-character windows fit, the one with a valid check digit wins.
+function extractVin(raw) {
+    const v = cleanVin(raw);
+    if (vinFormatOk(v) && (String(raw).replace(/[^A-Z0-9]/gi, '').length === 17 || vinCheckDigitOk(v))) return v;
+    const cands = [];
+    for (const run of String(raw || '').toUpperCase().match(/[A-HJ-NPR-Z0-9]+/g) || [])
+        for (let i = 0; i + 17 <= run.length; i++) cands.push(run.slice(i, i + 17));
+    return cands.find(vinCheckDigitOk) || (cands.length === 1 ? cands[0] : vinFormatOk(v) ? v : null);
 }
 const titleCase = s => String(s || '').toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
 
@@ -260,8 +272,9 @@ async function deleteVehicle() {
 // ---- Barcode scanner ----
 let scanStop = null;
 
-async function startVinScan() {
-    readDraft();
+// onFound(vin) gets the scanned VIN; without it the VIN goes into the vehicle form being edited.
+async function startVinScan(onFound) {
+    if (!onFound) readDraft();
     const ov = document.createElement('div');
     ov.id = 'vinScanner';
     ov.className = 'fixed inset-0 z-[60] bg-black flex flex-col';
@@ -269,7 +282,7 @@ async function startVinScan() {
       <div class="relative flex-1 overflow-hidden">
         <video id="vinVideo" playsinline muted class="absolute inset-0 w-full h-full object-cover"></video>
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div class="w-[88%] max-w-xl h-28 rounded-xl border-2 border-logoClr shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"></div>
+          <div id="vinGuide" class="w-[88%] max-w-xl h-28 rounded-xl border-2 border-logoClr shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"></div>
         </div>
         <p id="vinScanMsg" class="absolute top-4 inset-x-4 text-center text-txtWht text-sm bg-black/50 rounded-lg p-2">${t('vh_scan_help')}</p>
       </div>
@@ -280,7 +293,10 @@ async function startVinScan() {
       </div>`;
     document.body.appendChild(ov);
     const msg = text => { const el = document.getElementById('vinScanMsg'); if (el) el.textContent = text; };
-    const done = vin => { stopVinScan(); if (vin) { vmView.draft.vin = vin; renderVehicleManagerList(); lookupVin(); } };
+    let finished = false;
+    const done = vin => { if (finished) return; finished = true; stopVinScan(); if (!vin) return;
+        if (onFound) return onFound(vin);
+        vmView.draft.vin = vin; renderVehicleManagerList(); lookupVin(); };
     ov.querySelector('#vinScanCancel').addEventListener('click', () => done(null));
     ov.querySelector('#vinPhoto').addEventListener('change', async e => {
         const file = e.target.files[0];
@@ -289,40 +305,60 @@ async function startVinScan() {
         const vin = await decodeVinFromImage(file).catch(() => null);
         if (vin) done(vin); else msg(t('vh_scan_none'));
     });
-    const accept = text => { const v = cleanVin(text); return vinFormatOk(v) ? v : null; };
+    const accept = text => extractVin(text);
 
     try {
-        const native = 'BarcodeDetector' in window && (await BarcodeDetector.getSupportedFormats()).includes('code_39');
         const video = document.getElementById('vinVideo');
-        if (native) {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } });
-            video.srcObject = stream; await video.play();
-            const det = new BarcodeDetector({ formats: ['code_39', 'code_128', 'data_matrix', 'qr_code'] });
-            let live = true;
-            scanStop = () => { live = false; stream.getTracks().forEach(tr => tr.stop()); };
-            (async function loop() {
-                while (live) {
-                    try { for (const c of await det.detect(video)) { const v = accept(c.rawValue); if (v) return done(v); } } catch { }
-                    await new Promise(r => setTimeout(r, 150));
-                }
-            })();
-        } else {
-            msg(t('vh_scan_loading'));
-            await loadScript(ZXING_SRC);
-            const Z = window.ZXing;
-            const hints = new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.CODE_39, Z.BarcodeFormat.CODE_128, Z.BarcodeFormat.DATA_MATRIX, Z.BarcodeFormat.QR_CODE]], [Z.DecodeHintType.TRY_HARDER, true]]);
-            const reader = new Z.BrowserMultiFormatReader(hints, 200);
-            scanStop = () => reader.reset();
-            msg(t('vh_scan_help'));
-            await reader.decodeFromConstraints({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } }, video, result => {
-                const v = result && accept(result.getText());
-                if (v) done(v);
-            });
-        }
+        msg(t('vh_scan_loading'));
+        await loadScript(ZXING_SRC);
+        if (!document.getElementById('vinScanner')) return; // cancelled while loading
+        const Z = window.ZXing;
+        const reader = new Z.BrowserMultiFormatReader(zxingVinHints(Z), 150);
+        cropFramesToGuide(reader, video, document.getElementById('vinGuide'));
+        scanStop = () => reader.reset();
+        const onResult = result => {
+            if (!result) return; // no barcode in this frame
+            const v = accept(result.getText());
+            if (v) { if (navigator.vibrate) navigator.vibrate(200); done(v); }
+            else msg(t('vh_scan_seen'));
+        };
+        const supported = navigator.mediaDevices.getSupportedConstraints ? navigator.mediaDevices.getSupportedConstraints() : {};
+        const preferred = { video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 },
+            ...(supported.focusMode ? { advanced: [{ focusMode: 'continuous' }] } : {}) } };
+        try { await reader.decodeFromConstraints(preferred, video, onResult); }
+        catch { await reader.decodeFromConstraints({ video: { facingMode: 'environment' } }, video, onResult); }
+        msg(t('vh_scan_help'));
     } catch (e) {
         console.error('Camera error:', e);
         msg(t('vh_camera_error'));
     }
+}
+
+function zxingVinHints(Z) {
+    return new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.CODE_39, Z.BarcodeFormat.CODE_128, Z.BarcodeFormat.DATA_MATRIX, Z.BarcodeFormat.PDF_417, Z.BarcodeFormat.QR_CODE]],
+        [Z.DecodeHintType.TRY_HARDER, true]]);
+}
+
+// ZXing lets you override drawFrameOnCanvas to change each frame before decoding.
+// We crop every frame to just the guide box (mapped back through the video's
+// object-fit: cover scaling), so a thin door-jamb barcode fills the image ZXing reads.
+function cropFramesToGuide(reader, video, guide) {
+    const original = reader.drawFrameOnCanvas.bind(reader);
+    reader.drawFrameOnCanvas = function (src, dims, ctx) {
+        const vw = src.videoWidth, vh = src.videoHeight;
+        const vr = video.getBoundingClientRect(), gr = guide && guide.getBoundingClientRect();
+        if (!vw || !vh || !vr.width || !vr.height || !gr || !gr.width) return original(src, dims, ctx);
+        const scale = Math.max(vr.width / vw, vr.height / vh);
+        const offX = (vw * scale - vr.width) / 2, offY = (vh * scale - vr.height) / 2;
+        const sx = Math.max(0, Math.min(vw, (gr.left - vr.left + offX) / scale));
+        const sy = Math.max(0, Math.min(vh, (gr.top - vr.top + offY) / scale));
+        const sw = Math.max(1, Math.min(vw - sx, gr.width / scale));
+        const sh = Math.max(1, Math.min(vh - sy, gr.height / scale));
+        const canvas = this.getCaptureCanvas(src);
+        const w = Math.round(sw), h = Math.round(sh);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+        (ctx || this.getCaptureCanvasContext(src)).drawImage(src, sx, sy, sw, sh, 0, 0, w, h);
+    };
 }
 
 function stopVinScan() {
@@ -333,19 +369,18 @@ function stopVinScan() {
 
 // A photo of the barcode (or of the VIN plate text, read with OCR as a last resort).
 async function decodeVinFromImage(file) {
-    const accept = text => { const v = cleanVin(text); return vinFormatOk(v) ? v : null; };
+    const accept = text => extractVin(text);
     if ('BarcodeDetector' in window) {
         try {
-            const det = new BarcodeDetector({ formats: ['code_39', 'code_128', 'data_matrix', 'qr_code'] });
+            const det = new BarcodeDetector({ formats: ['code_39', 'code_128', 'data_matrix', 'pdf417', 'qr_code'] });
             for (const c of await det.detect(await createImageBitmap(file))) { const v = accept(c.rawValue); if (v) return v; }
         } catch { }
     }
     try {
         await loadScript(ZXING_SRC);
         const Z = window.ZXing;
-        const hints = new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.CODE_39, Z.BarcodeFormat.CODE_128, Z.BarcodeFormat.DATA_MATRIX, Z.BarcodeFormat.QR_CODE]], [Z.DecodeHintType.TRY_HARDER, true]]);
         const url = URL.createObjectURL(file);
-        try { const v = accept((await new Z.BrowserMultiFormatReader(hints).decodeFromImageUrl(url)).getText()); if (v) return v; }
+        try { const v = accept((await new Z.BrowserMultiFormatReader(zxingVinHints(Z)).decodeFromImageUrl(url)).getText()); if (v) return v; }
         finally { URL.revokeObjectURL(url); }
     } catch { }
     // OCR: look for a 17-character VIN in the text (letters I, O, Q never appear in VINs).
