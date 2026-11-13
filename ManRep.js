@@ -210,7 +210,9 @@ document.getElementById('newVehicleInput').addEventListener('keydown', e => {
 populateVehicleSelects();
 
 // ---- Maintenance/Repair form submit ----
-const SHEETDB_URL = 'https://sheetdb.io/api/v1/f85paemez3pqc';
+// All sheet access goes through our own signed-in API (api/sheet.js); SheetDB's URL and
+// credentials live only in Vercel's environment variables.
+const SHEETDB_URL = '/api/sheet';
 const SHEETDB_PARTS_URL = `${SHEETDB_URL}?sheet=parts`;
 
 // Unique per-record ID so a single row can be targeted precisely for edit/delete
@@ -218,7 +220,7 @@ const SHEETDB_PARTS_URL = `${SHEETDB_URL}?sheet=parts`;
 // IDs continue sequentially from the highest existing ID in that sheet (1, 2, 3, ...),
 // rather than filling gaps left by deleted rows.
 async function nextSequentialId(sheetUrl) {
-    const res = await fetch(sheetUrl);
+    const res = await apiFetch(sheetUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const records = await res.json();
     const maxId = records.reduce((max, r) => {
@@ -228,10 +230,10 @@ async function nextSequentialId(sheetUrl) {
     return String(maxId + 1);
 }
 
-// Builds a SheetDB URL that targets the single row where the ID column equals `id`.
+// Builds an API URL that targets the single row where the ID column equals `id`.
 function sheetRowUrl(id, sheetName) {
-    const base = `${SHEETDB_URL}/ID/${encodeURIComponent(id)}`;
-    return sheetName ? `${base}?sheet=${sheetName}` : base;
+    const base = `${SHEETDB_URL}?id=${encodeURIComponent(id)}`;
+    return sheetName ? `${base}&sheet=${sheetName}` : base;
 }
 
 document.querySelector('#logForm form').addEventListener('submit', async (e) => {
@@ -256,7 +258,7 @@ document.querySelector('#logForm form').addEventListener('submit', async (e) => 
             Cost: document.getElementById('cost').value
         };
 
-        const res = await fetch(SHEETDB_URL, {
+        const res = await apiFetch(SHEETDB_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [record] })
@@ -401,7 +403,7 @@ async function fetchRecords() {
     renderVehicleFilters();
 
     try {
-        const [mRes, pRes] = await Promise.all([fetch(SHEETDB_URL), fetch(SHEETDB_PARTS_URL)]);
+        const [mRes, pRes] = await Promise.all([apiFetch(SHEETDB_URL), apiFetch(SHEETDB_PARTS_URL)]);
         if (!mRes.ok) throw new Error(`HTTP ${mRes.status}`);
         if (!pRes.ok) throw new Error(`HTTP ${pRes.status}`);
         allMaintenanceRecords = await mRes.json();
@@ -667,7 +669,7 @@ async function deleteRecord(type, id, btn) {
 
     btn.disabled = true;
     try {
-        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), { method: 'DELETE' });
+        const res = await apiFetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), { method: 'DELETE' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         if (isMaintenance) {
@@ -695,7 +697,7 @@ async function saveRecord(type, id, btn) {
 
     btn.disabled = true;
     try {
-        const res = await fetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), {
+        const res = await apiFetch(sheetRowUrl(id, isMaintenance ? null : 'parts'), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: updates })

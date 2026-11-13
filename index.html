@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- The app moved to Vercel (the API that holds the keys lives there). Send old GitHub Pages visitors over. -->
+  <script>if (/\.github\.io$/i.test(location.hostname)) location.replace('https://mycarlogs.vercel.app/' + location.hash);</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="./src/output.css" rel="stylesheet">
   <script src="https://kit.fontawesome.com/225318ecee.js" crossorigin="anonymous"></script>
@@ -364,6 +366,10 @@
   </div>
 </div>
 
+<p class="text-center pb-8 pt-2">
+  <button type="button" id="signOutBtn" class="text-gray-500 text-xs hover:text-logoClr"><i class="fa-solid fa-right-from-bracket mr-1"></i><span data-i18n="auth_signout">Sign out</span></button>
+</p>
+
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden p-4">
   <div class="bg-gray-800 border border-red-400 rounded-xl p-6 w-full max-w-sm text-center">
@@ -382,6 +388,7 @@
 </div>
 
 <script src="./i18n.js"></script>
+<script src="./auth.js"></script>
 <script src="./ManRep.js"></script>
 <script src="./parts.js"></script>
 <script src="./timeline.js"></script>

@@ -7,7 +7,7 @@ const SCANS_URL = `${SHEETDB_URL}?sheet=scans`;
 const PDFJS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const TESSERACT_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024; // Vercel caps request bodies at 4.5 MB (base64 adds ~33%)
 const SCAN_COLUMNS = ['ID', 'Date', 'Vehicle', 'Mileage', 'Scan_Type', 'Report_Number', 'VIN', 'Systems_Scanned', 'Systems_Faulty', 'DTC_Count', 'Systems', 'DTCs', 'Files', 'Notes'];
 
 let allScans = [];
@@ -16,7 +16,6 @@ let scanVehicleFilter = 'all';
 let scanDraft = null;           // { info, systems, dtcs, files, fromImage, vehicle, notes }
 let scanBusy = '';              // progress message while reading/saving
 let scanMessage = null;         // { kind: 'ok' | 'error', text }
-let driveFormOpen = false;
 let pendingDeleteScan = null;
 const expandedScans = new Set();
 
@@ -37,9 +36,8 @@ function loadScript(src) {
 function parseJsonCell(v, fallback) {
     try { const x = JSON.parse(v); return x == null ? fallback : x; } catch { return fallback; }
 }
-function getDriveConfig() {
-    return { url: safeGet('scanDriveUrl') || '', key: safeGet('scanDriveKey') || '' };
-}
+// Drive uploads go through api/drive-upload.js; the server says whether it's set up.
+const driveEnabled = () => !!(typeof appSession !== 'undefined' && appSession.drive);
 // "SRS/SWS/PUH(Airbag System/...)" → { abbr: "SRS/SWS/PUH", full: "Airbag System/..." }
 function splitSystemName(name) {
     const m = String(name || '').match(/^([^()]+?)\s*\((.*)\)\s*$/);
@@ -250,7 +248,7 @@ async function handleScanFiles(fileList) {
     const images = files.filter(f => f.type.startsWith('image/')).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     const chosen = pdf ? [pdf] : images;
     if (!chosen.length) { scanMessage = { kind: 'error', text: t('sc_bad_file') }; renderScans(); return; }
-    const tooBig = chosen.find(f => f.size > MAX_UPLOAD_BYTES);
+    const tooBig = pdf && pdf.size > MAX_UPLOAD_BYTES ? pdf : null; // images get shrunk before upload
     if (tooBig) { scanMessage = { kind: 'error', text: t('sc_too_big').replace('{name}', tooBig.name) }; renderScans(); return; }
 
     try {
@@ -290,15 +288,27 @@ function fileToBase64(file) {
     });
 }
 
-async function uploadToDrive(file) {
-    const { url, key } = getDriveConfig();
-    // text/plain body avoids a CORS preflight, which Apps Script web apps don't answer.
-    const res = await fetch(url, {
+// Large photos are re-encoded as JPEG (max 2000 px) so they fit the upload limit.
+async function shrinkImage(file) {
+    if (!file.type.startsWith('image/') || file.size <= MAX_UPLOAD_BYTES) return file;
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const canvas = Object.assign(document.createElement('canvas'), { width: Math.round(bmp.width * scale), height: Math.round(bmp.height * scale) });
+    canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+    return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' });
+}
+
+async function uploadToDrive(original) {
+    const file = await shrinkImage(original);
+    if (file.size > MAX_UPLOAD_BYTES) throw new Error(t('sc_too_big').replace('{name}', file.name));
+    const res = await apiFetch('/api/drive-upload', {
         method: 'POST',
-        body: JSON.stringify({ key, name: file.name, mimeType: file.type || 'application/pdf', data: await fileToBase64(file) })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: file.name, mimeType: file.type || 'application/pdf', data: await fileToBase64(file) })
     });
-    const out = await res.json();
-    if (!out.ok) throw new Error(out.error || 'upload failed');
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || !out.ok) throw new Error(out.error || 'upload failed');
     return { name: out.name || file.name, url: out.url };
 }
 
@@ -310,7 +320,7 @@ async function saveScanDraft() {
     const dtcs = d.dtcs.filter(x => x.code.trim() || x.desc.trim());
     try {
         const files = [];
-        if (getDriveConfig().url) {
+        if (driveEnabled()) {
             for (let i = 0; i < d.files.length; i++) {
                 setScanBusy(t('sc_uploading').replace('{n}', i + 1).replace('{total}', d.files.length));
                 files.push(await uploadToDrive(d.files[i]));
@@ -334,7 +344,7 @@ async function saveScanDraft() {
             Files: JSON.stringify(files),
             Notes: d.notes
         };
-        const res = await fetch(SCANS_URL, {
+        const res = await apiFetch(SCANS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [row] })
@@ -347,7 +357,7 @@ async function saveScanDraft() {
         scanMessage = { kind: 'ok', text: t('sc_saved') };
     } catch (err) {
         console.error('Scan save error:', err);
-        scanMessage = { kind: 'error', text: /upload|unauthor|type|large/i.test(String(err.message)) && getDriveConfig().url
+        scanMessage = { kind: 'error', text: /upload|drive|type|large|MB/i.test(String(err.message)) && driveEnabled()
             ? t('sc_upload_failed').replace('{err}', err.message) : t('sc_save_error') };
     }
     scanBusy = '';
@@ -356,7 +366,7 @@ async function saveScanDraft() {
 
 async function deleteScan(id) {
     try {
-        const res = await fetch(`${SHEETDB_URL}/ID/${encodeURIComponent(id)}?sheet=scans`, { method: 'DELETE' });
+        const res = await apiFetch(sheetRowUrl(id, 'scans'), { method: 'DELETE' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         allScans = allScans.filter(s => s.ID !== id);
         scanMessage = { kind: 'ok', text: t('sc_deleted') };
@@ -372,7 +382,7 @@ async function fetchScans() {
     scansState = 'loading';
     renderScans();
     try {
-        const res = await fetch(SCANS_URL);
+        const res = await apiFetch(SCANS_URL);
         const data = await res.json();
         if (data && !Array.isArray(data) && data.error) { scansState = 'missing'; allScans = []; }
         else { allScans = Array.isArray(data) ? data : []; scansState = 'ready'; }
@@ -388,22 +398,9 @@ const inputCls = 'w-full text-sm rounded-lg border border-white/10 bg-gray-950/5
 const labelCls = 'text-gray-400 text-[11px] font-semibold uppercase tracking-wide';
 
 function uploadCardHtml() {
-    const drive = getDriveConfig();
-    const driveLine = drive.url
+    const driveLine = driveEnabled()
         ? `<span class="text-emerald-300"><i class="fa-brands fa-google-drive mr-1.5"></i>${t('sc_drive_connected')}</span>`
         : `<span class="text-gray-400"><i class="fa-brands fa-google-drive mr-1.5"></i>${t('sc_drive_not_connected')}</span>`;
-    const driveForm = driveFormOpen ? `
-      <div class="flex flex-col gap-2.5 rounded-xl border border-white/10 bg-gray-950/40 p-3">
-        <p class="text-gray-400 text-xs">${t('sc_drive_help')}</p>
-        <label class="${labelCls}" for="driveUrlInput">${t('sc_drive_url')}</label>
-        <input id="driveUrlInput" class="${inputCls}" placeholder="https://script.google.com/macros/s/…/exec" value="${escapeHtml(drive.url)}">
-        <label class="${labelCls}" for="driveKeyInput">${t('sc_drive_key')}</label>
-        <input id="driveKeyInput" type="password" class="${inputCls}" value="${escapeHtml(drive.key)}">
-        <div class="flex gap-3 justify-end">
-          ${drive.url ? `<button type="button" data-scan-action="drive-disconnect" class="text-gray-400 text-sm hover:text-txtWht">${t('sc_drive_disconnect')}</button>` : ''}
-          <button type="button" data-scan-action="drive-save" class="bg-red-400 text-gray-900 text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-red-300">${t('sc_drive_save')}</button>
-        </div>
-      </div>` : '';
 
     return `
     <div class="rounded-2xl border border-white/10 bg-gradient-to-b from-gray-800/90 to-gray-900/95 shadow-2xl shadow-black/40 overflow-hidden mb-6">
@@ -417,11 +414,10 @@ function uploadCardHtml() {
         <input id="scanFileInput" type="file" accept="application/pdf,image/*" multiple class="sr-only">
         ${scanBusy ? `<p class="flex items-center justify-center gap-2 text-red-200 text-sm"><i class="fa-solid fa-spinner fa-spin"></i><span id="scanBusy">${escapeHtml(scanBusy)}</span></p>` : ''}
         ${scanMessage ? `<p class="text-sm text-center ${scanMessage.kind === 'ok' ? 'text-emerald-300' : 'text-red-300'}">${escapeHtml(scanMessage.text)}</p>` : ''}
-        <div class="flex items-center justify-between text-xs border-t border-white/5 pt-3">
+        <div class="flex items-center justify-between gap-3 text-xs border-t border-white/5 pt-3">
           ${driveLine}
-          <button type="button" data-scan-action="drive-toggle" class="text-red-300 font-semibold hover:underline">${drive.url ? t('sc_drive_edit') : t('sc_drive_connect')}</button>
+          ${driveEnabled() ? '' : `<span class="text-gray-500 text-right">${t('sc_drive_server_hint')}</span>`}
         </div>
-        ${driveForm}
       </div>
     </div>`;
 }
@@ -491,7 +487,7 @@ function reviewHtml() {
         <label class="${labelCls}" for="draft_notes">${t('sc_notes')}</label>
         <textarea id="draft_notes" data-draft-field="notes" class="${inputCls} min-h-[80px] resize-none" placeholder="${t('sc_notes_placeholder')}">${escapeHtml(d.notes)}</textarea>
       </div>
-      ${!getDriveConfig().url ? `<p class="text-gray-400 text-xs"><i class="fa-brands fa-google-drive mr-1.5"></i>${t('sc_no_drive_note')}</p>` : ''}
+      ${!driveEnabled() ? `<p class="text-gray-400 text-xs"><i class="fa-brands fa-google-drive mr-1.5"></i>${t('sc_no_drive_note')}</p>` : ''}
       <button type="button" data-scan-action="draft-save" ${scanBusy ? 'disabled' : ''}
         class="w-full sm:w-2/3 mx-auto bg-gradient-to-r from-red-400 to-rose-400 text-gray-900 p-3 rounded-xl font-semibold shadow-lg shadow-red-400/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60">${t('sc_save')}</button>
     </div>`;
@@ -676,16 +672,7 @@ scansContent.addEventListener('click', e => {
     const act = e.target.closest('[data-scan-action]');
     if (act) {
         const a = act.dataset.scanAction;
-        if (a === 'drive-toggle') { driveFormOpen = !driveFormOpen; renderScans(); }
-        else if (a === 'drive-save') {
-            const url = document.getElementById('driveUrlInput').value.trim();
-            const key = document.getElementById('driveKeyInput').value.trim();
-            if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { scanMessage = { kind: 'error', text: t('sc_drive_bad_url') }; renderScans(); return; }
-            safeSet('scanDriveUrl', url); safeSet('scanDriveKey', key);
-            driveFormOpen = false; scanMessage = { kind: 'ok', text: url ? t('sc_drive_connected') : t('sc_drive_not_connected') }; renderScans();
-        }
-        else if (a === 'drive-disconnect') { safeSet('scanDriveUrl', ''); safeSet('scanDriveKey', ''); driveFormOpen = false; renderScans(); }
-        else if (a === 'copy-headers') {
+        if (a === 'copy-headers') {
             navigator.clipboard.writeText(SCAN_COLUMNS.join('\t'))
                 .then(() => { act.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i>${t('sc_copied')}`; })
                 .catch(() => { act.textContent = SCAN_COLUMNS.join(' '); });

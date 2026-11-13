@@ -1,6 +1,6 @@
 # MyCarLogs 2.0
 
-**Live Site:** https://webdesign-multimedia.github.io/MyCarLogs-2.0/
+**Live Site:** https://mycarlogs.vercel.app (the old GitHub Pages address redirects here)
 
 ---
 
@@ -83,10 +83,11 @@ Vehicles are not hardcoded. You can add any car at any time and remove ones you 
 | Styling | Tailwind CSS v3 |
 | Logic | Vanilla JavaScript (no frameworks) |
 | Icons | Font Awesome |
-| Data storage | Google Sheets via [SheetDB](https://sheetdb.io) API |
+| Hosting & API | [Vercel](https://vercel.com) (static site + serverless functions in `api/`) |
+| Data storage | Google Sheets via [SheetDB](https://sheetdb.io) API, reached only through `/api/sheet` |
 | Local backup | Browser `localStorage` |
 
-Data is saved to a connected Google Sheet through the SheetDB API so records are persistent across devices and browsers. A local `localStorage` copy is also kept as a backup.
+Data is saved to a connected Google Sheet through the SheetDB API (called by the server, never by the browser) so records are persistent across devices and browsers. A local `localStorage` copy is also kept as a backup.
 
 ---
 
@@ -112,7 +113,7 @@ You can add or remove any vehicle directly from the form using the **+ Add / Rem
 
 ## Google Sheet Setup
 
-Records are stored in one Google Sheet connected to SheetDB (`https://sheetdb.io/api/v1/f85paemez3pqc`). The sheet needs **two tabs**, and the tab names and row-1 headers must match exactly (case-sensitive). SheetDB silently drops any field that has no matching column.
+Records are stored in one Google Sheet connected to SheetDB. The SheetDB API URL is kept in the Vercel environment variable `SHEETDB_API_URL` (see [Security & Hosting](#security--hosting)). The sheet needs **two tabs**, and the tab names and row-1 headers must match exactly (case-sensitive). SheetDB silently drops any field that has no matching column.
 
 ### Tab 1: `maintenance/repairs` (first tab, default)
 
@@ -151,12 +152,40 @@ Records are stored in one Google Sheet connected to SheetDB (`https://sheetdb.io
 
 **2. Connect Google Drive (to keep the original PDF/images).** Optional: without it, only the extracted data is saved.
 1. Go to [script.google.com](https://script.google.com) → **New project**, delete the sample code and paste all of [`google-apps-script/drive-upload.gs`](google-apps-script/drive-upload.gs).
-2. Change `UPLOAD_KEY` at the top to your own long secret phrase. Save.
+2. Change `UPLOAD_KEY` at the top to your own long secret phrase. Save. (Never commit your real key.)
 3. **Deploy → New deployment** → gear icon → **Web app**. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy** and allow the permissions (Google will warn that the app is unverified, because it's your own script: **Advanced → Go to project**).
 4. Copy the **Web app URL** (ends in `/exec`). Opening it in a browser should show `{"ok":true,...}`.
-5. In MyCarLogs → **Scans** → **Google Drive · Connect**, paste the URL and your upload key, then **Save**. Do this once on each device you upload from (it's stored only in that browser).
+5. Put the URL in the Vercel variable `DRIVE_SCRIPT_URL` and the key in `DRIVE_UPLOAD_KEY`, then redeploy. The Scans section then shows **Google Drive connected**.
 
-Files go to a Drive folder named **MyCarLogs Scan Reports** and stay **private**: only your Google account can open them. The upload key stops strangers from adding files to your Drive. If you edit the script later, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
+Files go to a Drive folder named **MyCarLogs Scan Reports** and stay **private**: only your Google account can open them. The upload key stops strangers from adding files to your Drive, and it never reaches the browser. Uploads are limited to 3 MB per file (large photos are shrunk automatically). If you edit the script later, use **Deploy → Manage deployments → Edit → New version** so the URL stays the same.
+
+---
+
+## Security & Hosting
+
+The site runs on **Vercel**. The browser never sees any key: it only talks to the app's own API in `api/`, and the API only answers after you sign in.
+
+| Route | What it does |
+|---|---|
+| `POST /api/login` | Checks the app password, sets a signed session cookie (HttpOnly, Secure, SameSite=Strict, 30 days) |
+| `POST /api/logout` | Clears the cookie |
+| `GET /api/session` | Tells the page whether you're signed in and whether Drive uploads are set up |
+| `/api/sheet` | Signed-in proxy to SheetDB (`GET`/`POST` a tab, `PATCH`/`DELETE` one row by `id`); only the `parts` and `scans` tabs and the default tab are allowed |
+| `POST /api/drive-upload` | Signed-in proxy to the Apps Script uploader |
+
+**Environment variables** (Vercel → Project → Settings → Environment Variables, Production):
+
+| Name | Value |
+|---|---|
+| `APP_PASSWORD` | The password you type on the sign-in screen. Changing it signs out every device. |
+| `SESSION_SECRET` | 32+ random characters (e.g. `openssl rand -hex 32`). Changing it also signs out every device. |
+| `SHEETDB_API_URL` | `https://sheetdb.io/api/v1/<your id>` |
+| `SHEETDB_LOGIN` / `SHEETDB_PASSWORD` | The basic-auth login/password set in SheetDB's API settings. With these set, the SheetDB URL alone is useless to anyone else. |
+| `DRIVE_SCRIPT_URL` / `DRIVE_UPLOAD_KEY` | Optional, for saving scan files to Drive (see above). |
+
+After changing a variable, redeploy (Vercel → Deployments → ⋯ → Redeploy, or push a commit). Every push to `main` deploys automatically.
+
+---
 
 ---
 
@@ -169,6 +198,10 @@ npm install
 npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
 ```
 
-Then open `index.html` in your browser.
+To run it with the API, install the [Vercel CLI](https://vercel.com/docs/cli), then:
 
-> To connect your own Google Sheet, replace the SheetDB endpoint in `ManRep.js` with your own API URL and match the column names to your sheet headers.
+```bash
+vercel link          # once, pick the mycarlogs project
+vercel env pull --environment=production   # copies the variables into .env.local (git-ignored)
+vercel dev           # serves the site and /api on http://localhost:3000
+```

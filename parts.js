@@ -17,7 +17,7 @@ document.querySelector('#partsFormtwo form').addEventListener('submit', async (e
             Vehicle: document.getElementById('partsVehicle').value
         };
 
-        const res = await fetch(SHEETDB_PARTS_URL, {
+        const res = await apiFetch(SHEETDB_PARTS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [record] })
