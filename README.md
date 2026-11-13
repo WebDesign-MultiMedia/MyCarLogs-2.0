@@ -4,6 +4,14 @@
 
 A mobile-first web app for tracking everything done to a vehicle: maintenance, repairs, parts, mileage, OBD2 diagnostic scans and VIN lookups. I built it to manage my own family's cars and use it day to day, so features come from real needs rather than a tutorial checklist.
 
+## Screenshots
+
+| Mileage timeline | Service history | VIN scanner |
+|---|---|---|
+| <img src="docs/screenshots/timeline.jpg" alt="Mileage timeline with current mileage, totals and service reminders" width="260"> | <img src="docs/screenshots/timeline-history.jpg" alt="Service history cards with search, filters and miles since last oil change" width="260"> | <img src="docs/screenshots/vin-scanner.jpg" alt="VIN Scanner page with a decoded 2003 Honda Accord" width="260"> |
+| **Full VIN specs** | **OBD2 scan reports** | **Service log** |
+| <img src="docs/screenshots/vin-specs.jpg" alt="Full vehicle specifications from NHTSA" width="260"> | <img src="docs/screenshots/scan-reports.jpg" alt="Scan reports with upload area and trouble code counts" width="260"> | <img src="docs/screenshots/log-form.jpg" alt="Maintenance and repair log form" width="260"> |
+
 ---
 
 ## For Recruiters & Hiring Managers
