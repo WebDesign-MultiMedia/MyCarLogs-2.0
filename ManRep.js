@@ -561,7 +561,7 @@ function cardHtml(record, fields, type, borderColor, accentText, extraViewHtml) 
         <span class="text-gray-400 text-xs">${displayValue(fields[0], record)}</span>
       </div>
       <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        ${fields.slice(2).map(f => `
+        ${fields.slice(2).filter(f => f.key !== 'Notes_Issues').map(f => `
         <div${f.key === 'Purchased' ? ' class="col-span-2"' : ''}>
           <p class="text-gray-400 text-xs uppercase tracking-wide">${t(f.labelKey)}</p>
           <p class="text-txtWht">${displayValue(f, record)}</p>
@@ -719,12 +719,12 @@ function applyFiltersAndRender() {
             ${r.Notes_Issues ? `
             <div class="col-span-2">
               <p class="text-gray-400 text-xs uppercase tracking-wide">${t('card_notes')}</p>
-              <p class="text-txtWht">${r.Notes_Issues}</p>
+              <p class="text-txtWht">${escapeHtml(r.Notes_Issues)}</p>
             </div>` : ''}
             ${r.Service_Provider ? `
             <div class="col-span-2 border-t border-gray-600 pt-2 mt-1">
               <p class="text-gray-400 text-xs uppercase tracking-wide">${t('card_service')}</p>
-              <p class="text-txtWht">${r.Service_Provider}${r.SPLocation ? ' — ' + r.SPLocation : ''}</p>
+              <p class="text-txtWht">${escapeHtml(r.Service_Provider)}${r.SPLocation ? ' — ' + escapeHtml(r.SPLocation) : ''}</p>
             </div>` : ''}`;
 
         const mCards = maintenance.map(r => cardHtml(r, MAINTENANCE_FIELDS, 'maintenance', 'border-logoClr', 'text-logoClr', mExtras)).join('');
