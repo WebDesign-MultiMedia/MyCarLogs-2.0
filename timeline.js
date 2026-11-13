@@ -333,7 +333,7 @@ function gapHtml(newer, older) {
 function vehicleSpecHtml(v) {
     const spec = v && typeof vehicleSpecLine === 'function' ? vehicleSpecLine(v) : '';
     if (!spec && !(v && v.vin)) return '';
-    return `<p class="-mt-2 text-gray-400 text-xs flex flex-wrap gap-x-2">${spec ? `<span>${escapeHtml(spec)}</span>` : ''}${v.vin ? `<span class="text-gray-500 font-mono">VIN ${escapeHtml(v.vin)}</span>` : ''}</p>`;
+    return `<p class="-mt-2 text-gray-400 text-xs flex flex-wrap gap-x-2">${spec ? `<span>${escapeHtml(spec)}</span>` : ''}${v.vin ? `<span class="text-gray-500 font-mono">VIN ${escapeHtml(v.vin)}</span>` : ''}${v.vin ? `<button type="button" data-vh-specs="${escapeHtml(v.value)}" class="text-logoClr font-semibold hover:underline"><i class="fa-solid fa-list-check mr-1"></i>${t('vh_specs_short')}</button>` : ''}</p>`;
 }
 
 function renderTimeline() {

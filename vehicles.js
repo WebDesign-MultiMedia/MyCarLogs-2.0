@@ -78,9 +78,7 @@ function vinCheckDigitOk(v) {
 const titleCase = s => String(s || '').toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
 
 async function decodeVin(vin) {
-    const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${encodeURIComponent(vin)}?format=json`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const r = ((await res.json()).Results || [])[0] || {};
+    const r = await fetchVinSpecs(vin, { fresh: true }); // vehicle-specs.js (also caches the full spec sheet)
     if (!r.Make || !r.ModelYear) return null;
     const liters = parseFloat(r.DisplacementL);
     const cyl = parseInt(r.EngineCylinders, 10);
@@ -148,6 +146,11 @@ function vehicleEditHtml() {
         ${field('trim', 'vh_trim', 'maxlength="40"')}
       </div>
       ${field('engine', 'vh_engine', 'maxlength="40" placeholder="e.g. 3.5L V6"')}
+      ${vinFormatOk(cleanVin(v.vin)) ? `<details id="vhSpecs" data-vin="${escapeHtml(cleanVin(v.vin))}" class="rounded-xl border border-white/10 bg-gray-950/30 [&[open]>summary_i.fa-chevron-down]:rotate-180">
+        <summary class="cursor-pointer list-none flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-txtWht">
+          <span><i class="fa-solid fa-list-check text-logoClr mr-2"></i>${t('vh_specs')}</span><i class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform"></i></summary>
+        <div data-specs-body class="px-3 pb-3 flex flex-col gap-4"></div>
+      </details>` : ''}
       <p id="vhMsg" class="hidden text-sm"></p>
       <div class="flex gap-2">
         <button type="button" data-vh-cancel class="flex-1 border border-white/15 text-gray-300 rounded-xl p-2.5 hover:border-white/30">${t('action_cancel')}</button>
