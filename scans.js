@@ -557,7 +557,7 @@ function scanCardHtml(scan, prev) {
           ${!added && !cleared && !still ? `<span class="text-gray-300">${t('sc_no_codes')}</span>` : ''}`;
     }
 
-    const ctx = { vehicleLabel: getVehicleLabel(scan.Vehicle), modelYear: vinModelYear(scan.VIN) || (+(String(getVehicleLabel(scan.Vehicle)).match(/\b(?:19|20)\d{2}\b/) || [])[0] || null) };
+    const ctx = { vehicleLabel: getVehicleLabel(scan.Vehicle), modelYear: vinModelYear(scan.VIN) || (+(getVehicles().find(v => v.value === scan.Vehicle) || {}).year || 0) || (+(String(getVehicleLabel(scan.Vehicle)).match(/\b(?:19|20)\d{2}\b/) || [])[0] || null) };
     const tips = expanded ? dtcPatternInsights(dtcs, ctx) : [];
     const tipsHtml = tips.length ? `<div class="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
         <p class="${labelCls}"><i class="fa-solid fa-route mr-1.5"></i>${t('dg_start')}</p>

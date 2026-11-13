@@ -348,21 +348,13 @@
 </main>
 
 <!-- Vehicle Manager Modal -->
-<div id="vehicleModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden p-4">
-  <div class="bg-gray-800 border border-logoClr rounded-xl p-6 w-full max-w-sm">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-txtWht text-lg" data-i18n="manage_vehicles">Manage Vehicles</h3>
-      <button id="closeVehicleModal" class="text-gray-400 hover:text-txtWht text-3xl leading-none">&times;</button>
+<div id="vehicleModal" class="fixed inset-0 bg-black/70 flex items-end sm:items-center justify-center z-50 hidden p-0 sm:p-4">
+  <div class="w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl border border-white/10 bg-gray-900 shadow-2xl shadow-black/50 p-5 flex flex-col gap-4">
+    <div class="flex justify-between items-center">
+      <h3 class="text-txtWht text-lg font-semibold" data-i18n="manage_vehicles">Manage Vehicles</h3>
+      <button type="button" id="closeVehicleModal" class="text-gray-400 hover:text-txtWht text-3xl leading-none" aria-label="Close">&times;</button>
     </div>
-    <ul id="vehicleList" class="space-y-2 mb-4 max-h-60 overflow-y-auto"></ul>
-    <div class="flex gap-2">
-      <input type="text" id="newVehicleInput" placeholder="e.g. Toyota Camry 2020" data-i18n-placeholder="new_vehicle_placeholder"
-        class="flex-1 rounded-md border border-logoClr bg-transparent text-txtWht p-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-logoClr" />
-      <button type="button" id="addVehicleBtn" data-i18n="add"
-        class="bg-logoClr text-gray-900 px-3 py-2 rounded-md text-sm font-semibold hover:opacity-80 transition whitespace-nowrap">
-        Add
-      </button>
-    </div>
+    <div id="vehicleModalBody" class="flex flex-col gap-4"></div>
   </div>
 </div>
 
@@ -390,8 +382,10 @@
 <script src="./i18n.js"></script>
 <script src="./auth.js"></script>
 <script src="./ManRep.js"></script>
+<script src="./vehicles.js"></script>
 <script src="./parts.js"></script>
 <script src="./timeline.js"></script>
+<script src="./reminders.js"></script>
 <script src="./dtc-guide.js"></script>
 <script src="./scans.js"></script>
 </body>

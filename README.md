@@ -65,13 +65,17 @@ Tap the road icon to see each vehicle's service history laid out by odometer rea
 
 **Search & filters:** a search bar pinned to the top of the timeline finds services by part, notes, location or shop name (all words must match; matches are highlighted). Filter by type (Maintenance, Repair, Inspection, Purchase) or use a quick filter: Oil changes, Brakes, Tires & wheels, Transmission, Battery & starting. The miles/days between cards are recalculated between the matching services, so you can see how long each brake job or oil change lasted.
 
+**Service reminders:** a card under the header lists routine jobs (oil, air and cabin filters, transmission fluid, brake fluid, coolant, spark plugs, tires, inspection) as **Overdue**, **Due soon** (within 10% of the interval / 500 mi, or 30 days) or **OK**. Each job counts from the last logged service that includes it, using miles and/or months, whichever comes first. With enough history it estimates when the mileage will be reached at your usual pace. **Log it** opens the service form pre-filled for that job. **Intervals** changes the miles/months per vehicle (clear both to turn a job off); defaults are in `REMINDER_DEFAULTS` in `reminders.js`, and only changed intervals are saved to the `reminders` tab.
+
+**Mileage updates:** the **Update** button next to Current Mileage saves an odometer reading without a service (`mileage` tab). Current mileage is the highest reading from services, mileage updates and scans, shown with the date and average miles per month.
+
 ### Scan Reports
 Tap the stethoscope icon to save OBD2 scanner reports. Upload the **PDF report** from the Topdon app (most accurate) or **screenshots** of it (read with on-device text recognition, so double-check the codes). The app extracts the vehicle, date, mileage, VIN, scan type, each system's pass/fault status and every trouble code (code, description, status, system), including Honda-specific codes like `61-20`. You review and edit everything before saving. Each saved scan shows its codes grouped by system and compares them with the vehicle's previous scan (**new**, **cleared**, **still present**). The original file is saved to your Google Drive, and the "View report" link opens it.
 
 The PDF/image is read in your browser; nothing is sent anywhere except your Google Sheet (data) and your Google Drive (file).
 
 ### Vehicle Management
-Vehicles are not hardcoded. You can add any car at any time and remove ones you no longer own. Both the Maintenance and Parts forms stay in sync automatically. Vehicle filter buttons in the Records view also update to match.
+Vehicles are saved in the sheet's `vehicles` tab, so every device shows the same list (the browser keeps a copy so the page draws instantly). Each vehicle has a name and optional VIN, year, make, model, trim and engine. Type the VIN or **Scan VIN** (the barcode on the driver-side door jamb, live with the camera or from a photo), then **Look up VIN** to fill in the details from NHTSA's free vPIC service. Renaming a vehicle never breaks its history: records store the vehicle's fixed `Code`. The details show under the vehicle on the Timeline, and the model year helps the scan code guide.
 
 ---
 
@@ -107,7 +111,7 @@ The default vehicles are:
 - Honda Pilot 2007
 - Honda Odyssey 2010
 
-You can add or remove any vehicle directly from the form using the **+ Add / Remove Vehicle** button. Changes apply to both forms and the Records filter instantly.
+Add, edit or remove vehicles from either form with **+ Manage Vehicles**. Changes apply to both forms, the Records filter, Timeline and Scans instantly. The first time the app finds an empty `vehicles` tab, it copies the vehicles from that browser into it.
 
 ---
 
@@ -126,6 +130,15 @@ Records are stored in one Google Sheet connected to SheetDB. The SheetDB API URL
 
 | ID | Date_Purchased | Parts_Name | Parts_Location | Parts_Brand | Price | Purchased | Vehicle |
 |---|---|---|---|---|---|---|---|
+
+### Optional tabs (each feature shows these setup steps until its tab exists)
+
+| Tab | Row 1 headers | Used for |
+|---|---|---|
+| `scans` | see [Scan Reports Setup](#scan-reports-setup) | Scan reports |
+| `vehicles` | `ID, Code, Name, VIN, Year, Make, Model, Trim, Engine` | Vehicle list synced across devices |
+| `mileage` | `ID, Date, Vehicle, Mileage, Note` | Mileage updates |
+| `reminders` | `ID, Vehicle, Job, Miles, Months` | Custom reminder intervals (defaults work without it) |
 
 ### Rules
 
@@ -170,7 +183,7 @@ The site runs on **Vercel**. The browser never sees any key: it only talks to th
 | `POST /api/login` | Checks the app password, sets a signed session cookie (HttpOnly, Secure, SameSite=Strict, 30 days) |
 | `POST /api/logout` | Clears the cookie |
 | `GET /api/session` | Tells the page whether you're signed in and whether Drive uploads are set up |
-| `/api/sheet` | Signed-in proxy to SheetDB (`GET`/`POST` a tab, `PATCH`/`DELETE` one row by `id`); only the `parts` and `scans` tabs and the default tab are allowed |
+| `/api/sheet` | Signed-in proxy to SheetDB (`GET`/`POST` a tab, `PATCH`/`DELETE` one row by `id`); only the default tab and the `parts`, `scans`, `vehicles`, `mileage` and `reminders` tabs are allowed |
 | `POST /api/drive-upload` | Signed-in proxy to the Apps Script uploader |
 
 **Environment variables** (Vercel → Project → Settings → Environment Variables, Production):

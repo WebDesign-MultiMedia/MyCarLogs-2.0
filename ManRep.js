@@ -103,26 +103,19 @@ const DEFAULT_VEHICLES = [
     { value: 'HC12', label: 'Honda Civic 2012' }
 ];
 
+// Vehicles are cached in this browser and synced from the sheet's "vehicles" tab by vehicles.js.
+// The three defaults are only used the very first time (nothing saved yet).
 function getVehicles() {
-    const stored = localStorage.getItem('vehicles');
-    if (!stored) {
-        saveVehicles([...DEFAULT_VEHICLES]);
-        return [...DEFAULT_VEHICLES];
-    }
-
-    const vehicles = JSON.parse(stored);
-    const missingDefaults = DEFAULT_VEHICLES.filter(
-        dv => !vehicles.some(v => v.value === dv.value)
-    );
-    if (missingDefaults.length > 0) {
-        vehicles.push(...missingDefaults);
-        saveVehicles(vehicles);
-    }
-    return vehicles;
+    try {
+        const stored = JSON.parse(localStorage.getItem('vehicles'));
+        if (Array.isArray(stored)) return stored;
+    } catch { }
+    saveVehicles([...DEFAULT_VEHICLES]);
+    return [...DEFAULT_VEHICLES];
 }
 
 function saveVehicles(list) {
-    localStorage.setItem('vehicles', JSON.stringify(list));
+    try { localStorage.setItem('vehicles', JSON.stringify(list)); } catch { }
 }
 
 function populateVehicleSelects() {
@@ -141,70 +134,8 @@ function populateVehicleSelects() {
     renderVehicleFilters();
 }
 
-function renderVehicleManagerList() {
-    const vehicles = getVehicles();
-    const list = document.getElementById('vehicleList');
-    if (!list) return;
-
-    if (vehicles.length === 0) {
-        list.innerHTML = `<li class="text-gray-400 text-sm text-center py-2">${t('no_vehicles')}</li>`;
-        return;
-    }
-
-    list.innerHTML = vehicles.map((v, i) => `
-    <li class="flex justify-between items-center bg-gray-700/50 rounded-lg px-3 py-2">
-      <span class="text-txtWht text-sm">${v.label}</span>
-      <button type="button" class="delete-vehicle text-red-400 hover:text-red-300 text-xl leading-none ml-2" data-index="${i}" title="${t('remove_title')}">&times;</button>
-    </li>`).join('');
-
-    list.querySelectorAll('.delete-vehicle').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const vehicles = getVehicles();
-            vehicles.splice(parseInt(btn.dataset.index), 1);
-            saveVehicles(vehicles);
-            populateVehicleSelects();
-            renderVehicleManagerList();
-        });
-    });
-}
-
-// Modal open / close
+// Vehicle manager modal (list, edit, VIN scan) lives in vehicles.js.
 const vehicleModal = document.getElementById('vehicleModal');
-
-document.querySelectorAll('.open-vehicle-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-        vehicleModal.classList.remove('hidden');
-        renderVehicleManagerList();
-    });
-});
-
-document.getElementById('closeVehicleModal').addEventListener('click', () => {
-    vehicleModal.classList.add('hidden');
-});
-
-vehicleModal.addEventListener('click', e => {
-    if (e.target === vehicleModal) vehicleModal.classList.add('hidden');
-});
-
-// Add vehicle
-document.getElementById('addVehicleBtn').addEventListener('click', () => {
-    const input = document.getElementById('newVehicleInput');
-    const name = input.value.trim();
-    if (!name) return;
-    const vehicles = getVehicles();
-    vehicles.push({ value: name, label: name });
-    saveVehicles(vehicles);
-    populateVehicleSelects();
-    renderVehicleManagerList();
-    input.value = '';
-});
-
-document.getElementById('newVehicleInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('addVehicleBtn').click();
-    }
-});
 
 // Populate selects on page load
 populateVehicleSelects();
@@ -265,6 +196,7 @@ document.querySelector('#logForm form').addEventListener('submit', async (e) => 
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
+        if (allMaintenanceRecords.length) allMaintenanceRecords.push(record); // timeline + reminders see it right away
         const saved = JSON.parse(localStorage.getItem('maintenanceRecords') || '[]');
         saved.push(record);
         localStorage.setItem('maintenanceRecords', JSON.stringify(saved));
@@ -325,7 +257,7 @@ function renderVehicleFilters() {
 
     vehicles.forEach(v => {
         const active = activeVehicleFilter === v.value;
-        html += `<button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border transition hover:border-logoClr hover:text-logoClr ${active ? 'border-logoClr text-logoClr' : 'border-gray-600 text-gray-400'}" data-vehicle="${v.value}">${v.label}</button>`;
+        html += `<button class="filter-vehicle px-3 py-1 rounded-full text-xs sm:text-sm border transition hover:border-logoClr hover:text-logoClr ${active ? 'border-logoClr text-logoClr' : 'border-gray-600 text-gray-400'}" data-vehicle="${escapeHtml(v.value)}">${escapeHtml(v.label)}</button>`;
     });
 
     row.innerHTML = html;
@@ -422,9 +354,8 @@ const VEHICLE_NAMES = { 'HP07': 'Honda Pilot 2007', 'HO10': 'Honda Odyssey 2010'
 
 function getVehicleLabel(value) {
     if (!value) return '-';
-    if (VEHICLE_NAMES[value]) return VEHICLE_NAMES[value];
     const found = getVehicles().find(v => v.value === value);
-    return found ? found.label : value;
+    return found ? found.label : (VEHICLE_NAMES[value] || value);
 }
 
 // ---- Inline edit / delete ----
@@ -549,7 +480,7 @@ function fieldInputHtml(field, record) {
     const common = `class="w-full bg-gray-800 border border-logoClr rounded p-1 text-txtWht text-xs" data-field="${field.key}"`;
 
     if (field.type === 'vehicle') {
-        const opts = getVehicles().map(v => `<option value="${v.value}"${v.value === raw ? ' selected' : ''}>${v.label}</option>`).join('');
+        const opts = getVehicles().map(v => `<option value="${escapeHtml(v.value)}"${v.value === raw ? ' selected' : ''}>${escapeHtml(v.label)}</option>`).join('');
         return `<select ${common}><option value="">${t('opt_choose_car')}</option>${opts}</select>`;
     }
     if (field.type === 'select') {

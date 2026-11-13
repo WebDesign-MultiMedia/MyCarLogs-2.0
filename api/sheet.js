@@ -3,10 +3,10 @@
 //   POST   /api/sheet?sheet=scans   { data }   → add rows
 //   PATCH  /api/sheet?id=12&sheet=parts { data } → update the row with that ID
 //   DELETE /api/sheet?id=12&sheet=parts        → delete the row with that ID
-// sheet is optional (default tab = maintenance/repairs).
+// sheet is optional (default tab = maintenance/repairs). mileage + reminders feed Timeline reminders.
 const { protectedRoute, send, readJsonBody } = require('./_lib');
 
-const SHEETS = new Set(['', 'parts', 'scans']);
+const SHEETS = new Set(['', 'parts', 'scans', 'mileage', 'reminders', 'vehicles']);
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 module.exports = protectedRoute(async (req, res) => {

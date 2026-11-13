@@ -329,6 +329,13 @@ function gapHtml(newer, older) {
       <span>${t('tl_gap').replace('{mi}', fmtMiles(miles))}${days}</span></div>`;
 }
 
+// "2007 Honda Pilot EX-L · 3.5L V6 · VIN …" under the vehicle chips (from the vehicle profile).
+function vehicleSpecHtml(v) {
+    const spec = v && typeof vehicleSpecLine === 'function' ? vehicleSpecLine(v) : '';
+    if (!spec && !(v && v.vin)) return '';
+    return `<p class="-mt-2 text-gray-400 text-xs flex flex-wrap gap-x-2">${spec ? `<span>${escapeHtml(spec)}</span>` : ''}${v.vin ? `<span class="text-gray-500 font-mono">VIN ${escapeHtml(v.vin)}</span>` : ''}</p>`;
+}
+
 function renderTimeline() {
     const container = document.getElementById('timelineContent');
     if (!container || document.getElementById('timeline').style.display === 'none') return;
@@ -341,7 +348,8 @@ function renderTimeline() {
     }
 
     const { list, undated } = buildTimeline(timelineVehicle);
-    const current = list.length ? list[0].miles : null;
+    const curInfo = currentMileageInfo(timelineVehicle); // services, mileage updates and scans
+    const current = curInfo ? curInfo.miles : null;
     const first = list.length ? list[list.length - 1].miles : null;
     const totalCost = list.reduce((sum, s) => sum + s.cost, 0);
 
@@ -354,16 +362,21 @@ function renderTimeline() {
       <div class="h-1.5 bg-gradient-to-r from-logoClr via-emerald-300 to-logoClr"></div>
       <div class="p-4 sm:p-6 flex flex-col gap-5">
         <div class="flex gap-2 overflow-x-auto -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">${timelineVehicleChips(vehicles)}</div>
+        ${vehicleSpecHtml(vehicles.find(v => v.value === timelineVehicle))}
         <div class="flex items-end justify-between gap-4">
           <div>
             <p class="text-gray-400 text-xs font-semibold uppercase tracking-wide">${t('tl_current_mileage')}</p>
-            <p class="text-txtWht text-3xl sm:text-4xl font-bold tracking-tight">${current !== null ? fmtMiles(current) : '—'}<span class="text-gray-500 text-lg font-medium ml-1">mi</span></p>
+            <div class="flex items-center gap-3">
+              <p class="text-txtWht text-3xl sm:text-4xl font-bold tracking-tight">${current !== null ? fmtMiles(current) : '—'}<span class="text-gray-500 text-lg font-medium ml-1">mi</span></p>
+              <button type="button" id="tlMileageBtn" class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border border-white/15 text-gray-300 hover:border-logoClr/50 hover:text-logoClr"><i class="fa-solid fa-gauge-high"></i>${t('mi_update')}</button>
+            </div>
+            ${mileageMetaHtml(timelineVehicle)}
           </div>
           <button type="button" id="timelineLogBtn" class="text-logoClr text-sm font-semibold hover:underline whitespace-nowrap">${t('tl_log_service')}</button>
         </div>
         <div class="grid grid-cols-3 divide-x divide-white/10 rounded-xl bg-gray-950/40 border border-white/5 py-3">
           ${stat(t('tl_stat_services'), list.length)}
-          ${stat(t('tl_stat_tracked'), current !== null ? fmtMiles(current - first) + ' mi' : '—')}
+          ${stat(t('tl_stat_tracked'), current !== null && first !== null ? fmtMiles(current - first) + ' mi' : '—')}
           ${stat(t('tl_stat_spent'), totalCost ? fmtMoney(totalCost) : '—')}
         </div>
       </div>
@@ -394,7 +407,7 @@ function renderTimeline() {
       <div id="tlResultInfo" class="flex items-center justify-between text-xs text-gray-400 px-1"></div>
     </div>`;
 
-    container.innerHTML = header + (list.length ? controls : '') + '<div id="timelineList"></div>';
+    container.innerHTML = header + (list.length ? remindersCardHtml(timelineVehicle) + controls : '') + '<div id="timelineList"></div>';
     renderTimelineList();
 }
 
@@ -404,7 +417,7 @@ function renderTimelineList() {
     if (!listEl) return;
     const { list, undated } = buildTimeline(timelineVehicle);
     if (!list.length) { listEl.innerHTML = `<p class="text-gray-400 text-center py-8">${t('tl_empty')}</p>`; return; }
-    const current = list[0].miles;
+    const current = Math.max(list[0].miles, (currentMileageInfo(timelineVehicle) || {}).miles || 0);
 
     const active = filtersActive();
     const visible = list
@@ -448,10 +461,10 @@ function renderTimelineList() {
 }
 
 async function openTimeline() {
-    if (!allMaintenanceRecords.length) {
+    if (!allMaintenanceRecords.length || !extras.loaded) {
         document.getElementById('timelineContent').innerHTML =
             `<p class="text-gray-400 text-center py-8 animate-pulse">${t('loading_records')}</p>`;
-        await fetchRecords();
+        await Promise.all([allMaintenanceRecords.length ? null : fetchRecords(), loadTimelineExtras().catch(() => {})]);
     }
     renderTimeline();
 }
